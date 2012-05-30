@@ -1,0 +1,32 @@
+############################################################################
+# Export directives.  These directives export functions.  S3 methods for
+# classes declared in the package should be declared with the "S3method"
+# directive.
+#
+useDynLib(qtlhot)
+export(add.phenos)
+
+export(big.phase0)
+export(qtlhot.phase0)
+export(parallel.qtlhot)
+export(quant.plot)
+export(qtlhot.scan)
+export(hotspot.scan)
+export(hotspot.plot)
+export(sliding.bar.plot)
+
+export(sim.null.cross)
+export(sim.null.pheno.data)
+export(include.hotspots)
+export(count.thr)
+export(set.to.zero.beyond.drop.int)
+export(filter.threshold)
+export(pull.highlods)
+export(lod.quantile.permutation)
+
+export(NL.N.permutations)
+export(NL.N.perm)
+export(NL.N.summary)
+export(WW.permutations)
+export(WW.perm)
+export(WW.summary)
