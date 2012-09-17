@@ -15,7 +15,8 @@
 #     A copy of the GNU General Public License, version 3, is available
 #     at http://www.r-project.org/Licenses/GPL-3
 #
-# Contains: sim.null.cross, sim.null.pheno.data, include.hotspots
+# Contains: sim.null.cross, sim.null.pheno.data, include.hotspots,
+#           mySimulations, sim.hotspot
 ######################################################################
 
 ## Generates a "null dataset" cross
@@ -54,7 +55,7 @@ include.hotspots <- function(cross,
                              lod.range.2,
                              lod.range.3,
                              res.var=1,
-                             nT,
+                             n.pheno,
                              init.seed)
 {
   get.closest.pos.nms <- function(pos, cross, chr)
@@ -108,17 +109,77 @@ include.hotspots <- function(cross,
 
   ## Why 50 for first, 500 for 2nd and 3rd?
   ## Why strange lod.range for 2nd?
-  index1 <- sample(1:nT, hsize[1], replace = FALSE)
+  index1 <- sample(1:n.pheno, hsize[1], replace = FALSE)
   cross <- update.pheno(cross, hchr[1], hpos[1], hsize[1], Q.eff, latent.eff,
                         lod.range.1, res.var, index1, hk.prob)
 
-  index2 <- sample((1:nT)[-index1], hsize[2], replace = FALSE)
+  index2 <- sample((1:n.pheno)[-index1], hsize[2], replace = FALSE)
   cross <- update.pheno(cross, hchr[2], hpos[2], hsize[2], Q.eff, latent.eff,
                         lod.range.2, res.var, index2, hk.prob)
 
-  index3 <- sample((1:nT)[-c(index1, index2)], hsize[3], replace = FALSE)
+  index3 <- sample((1:n.pheno)[-c(index1, index2)], hsize[3], replace = FALSE)
   cross <- update.pheno(cross, hchr[3], hpos[3], hsize[3], Q.eff, latent.eff,
                         lod.range.3, res.var, index3, hk.prob)
 
   cross
+}
+#################################################################################
+mySimulations <- function(...) sim.hotspot(...)
+#################################################################################
+sim.hotspot <- function(nSim, 
+                        cross, 
+                        n.pheno,
+                        latent.eff,
+                        res.var = 1,
+                        n.quant,
+                        n.perm,
+                        alpha.levels,
+                        lod.thrs,
+                        drop.lod=1.5,
+                        verbose = FALSE)
+{
+  s.quant <- seq(n.quant)
+
+  nalpha <- length(alpha.levels)
+  nlod <- length(lod.thrs)
+
+  ## outputs count the number of times we detected
+  ## a hotspot using the respective method
+  outNL <- matrix(0, n.quant, nalpha)
+  outN <- outWW <- matrix(0, nlod, nalpha)
+
+  ## we are saving the thresholds of each simulation
+  thrNL <- array(dim=c(n.quant, nalpha, nSim))
+  thrN <- array(dim=c(nlod, nalpha, nSim))
+  thrWW <- array(dim=c(nlod, nalpha, nSim))
+
+  for(k in 1:nSim){
+    mycat(k, verbose, TRUE)
+
+    mycat("sim.null.pheno.data", verbose)
+    ncross <- sim.null.pheno.data(cross, n.pheno, latent.eff, res.var)
+  
+    ## Simulate correlated phenotypes and create threshold summaries.
+    out.sim <- filter.threshold(ncross, n.pheno, latent.eff[k], res.var,
+                             lod.thrs, drop.lod,
+                             s.quant, n.perm, alpha.levels,
+                             verbose)
+
+    thrNL[,,k] <- out.sim$NL.thrs
+    thrN[,,k] <- out.sim$N.thrs
+    thrWW[,,k] <- out.sim$WW.thrs    
+    outNL <- outNL + out.sim$NL
+    outN <- outN + out.sim$N.counts
+    outWW <- outWW + out.sim$WW.counts
+  }
+
+  
+  NL.err <- outNL/nSim
+  dimnames(NL.err) <- list(as.factor(s.quant), as.factor(alpha.levels))
+  N.err <- outN / nSim
+  dimnames(N.err) <- list(as.factor(lod.thrs), as.factor(alpha.levels))
+  WW.err <- outWW / nSim
+  dimnames(WW.err) <- list(as.factor(lod.thrs), as.factor(alpha.levels))
+  list(nSim = nSim, NL.err=NL.err, N.err=N.err, WW.err=WW.err, thrNL=thrNL, thrN=thrN, 
+       thrWW=thrWW)  
 }

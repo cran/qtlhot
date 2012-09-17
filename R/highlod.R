@@ -1,5 +1,5 @@
 ######################################################################
-# neqtl.R
+# highlod.R
 #
 # Elias Chaibub Neto
 # Brian S Yandell
@@ -17,43 +17,138 @@
 #     A copy of the GNU General Public License, version 3, is available
 #     at http://www.r-project.org/Licenses/GPL-3
 #
-# Contains: pull.highlods, sexbatch.covar, scanone.permutations,
-#           cat.scanone, get.tails, lod.quantile.permutation,
-#           make.max.N, make.maxlod, smooth.neqtl, lod.quantile.permutations.2
+# Contains: highlod, sexbatch.covar, scanone.permutations,
+#           cat.scanone, lod.quantile.permutation,
+#           make.max.N, make.maxlod, smooth.neqtl
 ######################################################################
-
-## see  ~/p/private/diabetes1/diabetes10/scan.perm/Rcode files
-pull.highlods <- function(scans, pheno.col, lod=4.5, drop.lod = 1.5)
+highlod <- function(scans, lod.thr = 0, drop.lod = 1.5,
+                    extend = TRUE, restrict.lod = FALSE, ...)
 {
-  if(missing(pheno.col))
-    pheno.col <- names(scans)[-(1:2)]
+  pheno.col <- seq(ncol(scans) - 2)
+
+  if(is.null(lod.thr))
+    lod.thr <- 0
   
   ## Extract matrix of lod scores.
   x <- as.matrix(scans[,-(1:2), drop = FALSE])
-  ## Find which values are at or above l!od threshold. 
-  wh <- which(x >= lod)
+
+  ## Keep only traits with some LOD above lod threshold.
+  keep <- apply(x, 2, function(x, lod.thr) any(x >= lod.thr), lod.thr)
+  x <- x[, keep, drop = FALSE]
+  
+  ## Find which values are at within drop.lod of maximum per chr and trait.
+  if(restrict.lod) {
+    ## Restrict to loci above LOD threshold.
+    if(extend)
+      tmpfn <- function(x, lod.thr, drop.lod) {
+        maxx <- max(x)
+        g <- (maxx >= lod.thr) & (maxx <= x + drop.lod)
+        if(any(g)) {
+          d <- diff(g)
+          ## Add one more pseudomarker on either side if possible.
+          (g | (c(d,0) == 1) | (c(0,d) == -1)) & (x >= lod.thr)
+        }
+        else
+          g
+      }
+    else
+      tmpfn <- function(x, lod.thr, drop.lod) {
+        (max(x) <= x + drop.lod) & (x >= lod.thr)
+      }
+  }
+  else { ## Do not restrict support interval to be above lod.thr
+    if(extend)
+      tmpfn <- function(x, lod.thr, drop.lod) {
+        maxx <- max(x)
+        g <- (maxx >= lod.thr) & (maxx <= x + drop.lod)
+        if(any(g)) {
+          d <- diff(g)
+          ## Add one more pseudomarker on either side if possible.
+          g | (c(d,0) == 1) | (c(0,d) == -1)
+        }
+        else
+          g
+      }
+    else
+      tmpfn <- function(x, lod.thr, drop.lod) {
+        maxx <- max(x)
+        (maxx >= lod.thr) & (maxx <= x + drop.lod)
+      }
+  }
+  lodint.pos <- function(x, chr, lod.thr, drop.lod) {
+    unlist(tapply(x, chr, tmpfn, lod.thr, drop.lod))
+  }
+  wh <- apply(x, 2, lodint.pos, scans$chr, lod.thr, drop.lod)
   
   ## Get row and column indices.
   rr <- row(x)[wh]
-  cc <- col(x)[wh]
+  cc <- seq(keep)[keep][col(x)[wh]]
 
   ## Find which are within drop.lod of max lod per chr.
   lod <- x[wh]
-  chr <- scans$chr[rr]
-  tmp <- interaction(cc, chr, drop = TRUE)
-  maxlod <- tapply(lod, tmp, max)
-  ## Is not adding name properly here.
-  wh <- which(maxlod[tmp] <= lod + drop.lod)
-
-  ## Reget values.
-  rr <- rr[wh]
-  cc <- cc[wh]
-  lod <- lod[wh]
-
+  
   ## return data frame with genome row, trait column and lod value.
-  cbind.data.frame(row = rr, phenos = pheno.col[cc], lod = lod)
+  out <- list(highlod = cbind.data.frame(row = rr, phenos = pheno.col[cc], lod = lod),
+              chr.pos = scans[,1:2])
+  class(out) <- c("highlod", "list")
+  attr(out, "lod.thr") <- lod.thr
+  attr(out, "drop.lod") <- drop.lod
+  out
 }
+print.highlod <- function(x, ...) print(summary(x, ...))
+summary.highlod <- function(object, ...)
+{
+  cat("frequency of high LOD entries by chromosome:\n")
+  print(addmargins(table(object$chr.pos$chr[object$highlod$row])))
+  cat("\nfrequency of high LOD entries per phenotype:\n")
+  print(table(table(object$highlod$pheno)))
+  invisible()
+}
+plot.highlod <- function(x, ..., quant.level = NULL, sliding = FALSE)
+{
+  
+  if(sliding) {
+    if(is.list(quant.level))
+      quant.level <- quant.level$max.lod.quant
+    
+    ## Need to supply quant.level as second argument.
+    slidingbar.plot(slidingbar.create(x, quant.level, ...))
+  }
+  else
+    plot(hotsize(x, ..., quant.level = quant.level), ...)
+}
+###################################################################################
+highlod.thr <- function(highobj, lod.thr)
+{
+  if(is.null(lod.thr))
+      lod.thr <- attr(highobj, "lod.thr")
 
+  if(!is.null(lod.thr)) {
+    highobj$highlod <- highobj$highlod[highobj$highlod$lod >= lod.thr,, drop = FALSE]
+    attr(highobj, "lod.thr") <- lod.thr
+  }
+  
+  highobj
+}
+###################################################################################
+cat.scanone <- function(dirpath = ".", filenames = permfiles, chr.pos)
+{
+  ## Folder should contain scanone highlods data across all traits for ONE permutation
+  permfiles <- list.files(dirpath, paste("per.scan", "*", "RData", sep = "."))
+
+  ## Make and remove per.scan.hl. Below use version from attached files.
+  per.scan.hl <- NULL
+  rm(per.scan.hl)
+  
+  for(i in 1:length(filenames)){
+    attach(filenames[i], warn.conflicts = FALSE)
+    if(i==1)  highobj <- per.scan.hl else
+    highobj <- rbind.data.frame(highobj, per.scan.hl)
+    detach()
+  }
+  cbind.data.frame(chr.pos[highobj$row,],highobj)
+}
+###################################################################################
 sexbatch.covar <- function(cross, batch.effect, verbose = FALSE)
 {
   ic <- getsex(cross)$sex
@@ -103,210 +198,10 @@ scanone.permutations <- function(cross, pheno.col = seq(3, nphe(cross)),
     per.scan <- scanone(perm.cross, pheno.col=pheno.col, method="hk", 
                         addcovar=covars$addcovar, intcovar=covars$intcovar)
 
-    per.scan.hl <- pull.highlods(per.scan, lod = lod.min, drop.lod = drop.lod)
+    per.scan.hl <- highlod(per.scan, lod.thr = lod.min, drop.lod = drop.lod,
+                                 restrict.lod = TRUE)$highlod
 
     save(per.scan.hl, perms,
          file=paste("per.scan",pheno.set, i,"RData",sep="."))
   }
-}
-
-## Folder should contain scanone highlods data across all traits for ONE permutation
-cat.scanone <- function(dirpath = ".", filenames = permfiles, chr.pos)
-{
-  permfiles <- list.files(dirpath, paste("per.scan", "*", "RData", sep = "."))
-
-  ## Make and remove per.scan.hl. Below use version from attached files.
-  per.scan.hl <- NULL
-  rm(per.scan.hl)
-  
-  for(i in 1:length(filenames)){
-    attach(filenames[i], warn.conflicts = FALSE)
-    if(i==1)  cat.scan.hl <- per.scan.hl else
-    cat.scan.hl <- rbind.data.frame(cat.scan.hl, per.scan.hl)
-    detach()
-  }
-  cbind.data.frame(chr.pos[cat.scan.hl$row,],cat.scan.hl)
-}
-
-## Get the 2000 highest values above lod=4 (see scan.perm.R)
-get.tails <- function(highs, n.quant = 2000)
-{
-  n.quant <- min(n.quant, max(table(highs[,"row"])))
-  tmpfn <- function(x, n) {
-    l <- length(x)
-    if(l < n)
-      x <- c(x, rep(NA, n - l))
-    rev(sort(x, na.last = FALSE))[seq(n)]
-  }
-  out <- tapply(highs[,"lod"], highs[,"row"], tmpfn, n.quant)
-  ## Turn list of items of length n.quant into matrix.
-  rows <- names(out)
-  out <- matrix(unlist(out), n.quant)
-  dimnames(out) <- list(seq(n.quant), rows)
-  t(out)
-}
-
-
-## cat.scan.hl = highlods() data.frame across all traits in a tissue
-## N = number of highest lod scores to save 2000 ~= 0.05 percentile
-lod.quantile.permutation <- function(cat.scan.hl,N,lod.thr,window,chr.pos,n.phe)
-{
-  n.chr <- levels(chr.pos$chr)
-
-  ## Elias quantiles.
-  quant <- get.tails(cat.scan.hl, n.quant = N)
-  N <- ncol(quant)
-  max.lod.quant <- apply(quant,2,max,na.rm=TRUE)
-  names(max.lod.quant) <- paste(paste(round(1-as.numeric(dimnames(quant)[[2]])/n.phe,4)*100,
-                                      "%", sep=""),1:N, sep="_")
-
-  ## Jansen counts.
-  ## Count number of LODs per position and find max (raw or smoothed).
-  max.N <- make.max.N(cat.scan.hl, lod.thr, chr.pos, window)
-  
-  list(max.lod.quant=max.lod.quant, max.N=max.N)
-}
-make.max.N <- function(cat.scan.hl, lod.thr, chr.pos, window,
-                       max.hl = make.maxlod(cat.scan.hl, chr.pos))
-{
-  l.lod.thr <- length(lod.thr)
-  max.N <- data.frame(max.N = vector(length = l.lod.thr), max.N.win = vector(length = l.lod.thr),
-                      row.names = lod.thr, check.names = TRUE)
-  for(j in 1:l.lod.thr){
-    XX <- cat.scan.hl$lod >= lod.thr[j]
-    max.N$max.N[j] <- max(tapply(XX, cat.scan.hl$row, sum, na.rm = TRUE), na.rm = TRUE)
-
-    neqtl.pos <- smooth.neqtl(cat.scan.hl, chr.pos, max.hl, lod.thr[j], window)
-    
-    max.N$max.N.win[j] <- max(neqtl.pos[,3])
-  }
-  max.N
-}
-make.maxlod <- function(cat.scan.hl, chr.pos)
-{
-  ## find high LOD and position per chromosome.
-  n.chr <- levels(chr.pos$chr)
-
-  tmpfn <- function(x) {
-    if(is.null(x))
-      0
-    else
-      max(x, na.rm = TRUE)
-  }
-  tmpfn2 <- function(x) {
-    if(is.null(x))
-      NA
-    else
-      mean(x, na.rm=TRUE)
-  }
-  tmpfn3 <- function(a) {
-    is.nan(a) | a==max(a, na.rm=TRUE)
-  }
-  
-  maxlod.hl <- maxlod.pos.hl <- vector("list", length(n.chr))
-  names(maxlod.pos.hl) <- n.chr
-  for(k in seq(along=n.chr)) {
-    scan.out.bychr <- cat.scan.hl[cat.scan.hl$chr==n.chr[k],]
-    ## This is kludgey. How to make more efficient?
-    scan.out.bychr$phenos <- ordered(scan.out.bychr$phenos, unique(scan.out.bychr$phenos))
-    tmp <- tapply(scan.out.bychr$lod, scan.out.bychr$phenos, tmpfn3)
-    scan.out.bychr <- scan.out.bychr[unlist(tmp),]
-    if(nrow(scan.out.bychr)) {
-      scan.out.bychr$phenos <- ordered(scan.out.bychr$phenos, unique(scan.out.bychr$phenos))
-      ## Find high lod.
-      maxlod.hl[[k]] <- tapply(scan.out.bychr$lod, scan.out.bychr$phenos, tmpfn)
-      ## Find position of high lod.
-      maxlod.pos.hl[[k]] <- tapply(scan.out.bychr$pos, scan.out.bychr$phenos, tmpfn2)
-    }
-  }
-  list(lod = maxlod.hl, pos = maxlod.pos.hl)
-}
-
-smooth.neqtl <- function(cat.scan.hl, chr.pos, max.hl = make.maxlod(cat.scan.hl, chr.pos),
-                         lod.thr, window = 5)
-{
-  chr <- chr.pos$chr
-  pos <- chr.pos$pos
-  n.chr <- levels(chr.pos$chr)
-
-  maxlod.thr.pos <- max.hl$pos
-  for(k in seq(along=n.chr))
-    maxlod.thr.pos[[k]] <- max.hl$pos[[k]][max.hl$lod[[k]] >= lod.thr]
-  
-  out <- smoothall(maxlod.thr.pos,thechr = chr.pos$chr, thepos = chr.pos$pos, window = window)
-  ## Recover marker information.
-  rownames(out) <- rownames(chr.pos)
-  out
-}
-
-## Run permuations
-lod.quantile.permutations.2 <- function(cross, pheno.col, N, n.perm, lod.thr, 
-                                        batch.effect, window, seed = 123456789, verbose = FALSE)
-{
-
-  ## Set up pseudo-random number generation seeds.
-  set.seed(seed[[1]])
-  all.seeds <- sample(c(98765:987654), n.perm, replace=FALSE)
-
-  ## Set up matrices to record values.
-  nphe.cross <- nphe(cross)
-  N <- N[N <= nphe.cross]
-  quants <- 1 - (N - 1)/nphe.cross
-  l.N <- length(N)
-  max.lod.quant <- matrix(NA, n.perm, l.N)
-  dimnames(max.lod.quant)[[2]] <- paste(paste(round(quants,4)*100, "%", sep=""), 
-                                        N, sep="_")
-  l.lod.thr <- length(lod.thr)
-  max.N <- matrix(NA, n.perm, l.lod.thr)
-  max.lod.quant <- matrix(NA, n.perm, l.N)
-  max.N.window <- matrix(NA, n.perm, l.lod.thr)
-
-  if(!is.null(batch.effect))
-    cross <- subset(cross, ind = !is.na(cross$pheno[[batch.effect]]))
-
-  covars <- sexbatch.covar(cross, batch.effect)
-
-  n.ind <- nind(cross)
-
-  for(i in 1:n.perm){
-    perm.cross <- cross
-    set.seed(all.seeds[i])
-    tmp <- sample(c(1:n.ind), n.ind, replace=FALSE)
-    perm.cross$pheno <- cross$pheno[tmp,]
-
-    per.scan <- scanone(perm.cross, pheno.col=pheno.col, method="hk", 
-                        addcovar=covars$addcovar, intcovar=covars$intcovar)
-
-    ## Elias' quantiles.
-    quant <- apply(per.scan[,-(1:2)], 1, quantile, quants)
-    max.lod.quant[i,] <- apply(quant,1,max)
-
-    ## Jansen's count.
-    max.N[i,] <- apply(count.thr(per.scan, lod.thr, droptwo = TRUE), 1, sum)
-
-    ## Smoothed count.
-    maxlod <-  apply(per.scan[,-(1:2)], 2, tapply, per.scan[,1], max)
-    chrs <- dimnames(maxlod)[[1]]
-    chr <- factor(per.scan[,1], levels = chrs)
-    pos <- as.numeric(per.scan[,2])
-
-    maxlod.pos <- maxlod.thr.pos <- vector("list", length(chrs))
-    names(maxlod.pos) <- names(maxlod.thr.pos) <- chrs
-    for(k in seq(length(chrs))) {
-      scan.out.bychr <- per.scan[per.scan[,1] == chrs[k], ]
-      maxlod.pos[[k]] <- apply(scan.out.bychr[,-(1:2)], 2, function(a,b)
-                               mean(b[!is.nan(a) & a==max(a, na.rm=TRUE)]), scan.out.bychr[,2])
-    }
-
-    for(j in seq(along = lod.thr)){
-      for(k in chrs)
-        maxlod.thr.pos[[k]] <- maxlod.pos[[k]][maxlod[k,] >= lod.thr[j]]
-      neqtl.pos <- smoothall(maxlod.thr.pos, thechr = chr, thepos = pos, window = window)
-      max.N.window[i,j] <- max(neqtl.pos[,3])
-    }
-    print(i)
-  }
-  list(max.lod.quant=max.lod.quant, 
-       max.N=max.N,
-       max.N.window=max.N.window)
 }

@@ -1,10 +1,52 @@
-sim.R:
+hotscan.R:
+qtlhot.scan
+	pull.highlods
+	quant.slide
+	hotspot.scan
+pull.hotspots
+	get.chr.pos
+quant.sum
+	quant.slide
+quant.plot
+	quant.sum
+hotspot.scan
+	*calc.genoprob
+	get.chr.pos
+	pull.hotspots
+	make.maxlod
+	smooth.neqtl
+scan.hl.plot
+
+highlod.R:
+pull.highlods
+sexbatch.covar
+scanone.permutations
+	*scanone
+	pull.highlods
+cat.scanone
+lod.quantile.permutation
+	get.tails
+	make.max.N
+		smooth.neqtl
+make.maxlod
+smooth.neqtl
+lod.quantile.permutations.2
+	sexbatch.covar
+	*scanone
+	count.thr
+	smoothall
+
+simhot.R:
 sim.null.cross
 	sim.null.pheno.data
 	*sim.map
 	*sim.cross
 	*calc.genoprob
 sim.null.pheno.data
+mySimulations = sim.hotspot
+sim.hotspot
+	sim.null.pheno.data
+	sum.threshold
 
 perm.R:
 NL.N.permutations
@@ -14,16 +56,19 @@ NL.N.permutations
 		mycat
 		count.thr
 	NL.N.summary
-count.thr
-	exceed.thr
+
+ravel.R:
+get.hotsize
+get.hotscan
+ravel.scan
+ravel.filter
+get.hotravel
 
 study.R:
-mySimulations = sim.hotspot
+count.thr
+	exceed.thr
 get.hotspot
-sim.hotspot
-	sim.null.pheno.data
-	sum.threshold
-sum.threshold
+filter.threshold
 	*scanone
 	set.to.zero.beyond.drop.int
 	NL.N.permutations
@@ -44,6 +89,25 @@ set.to.zero.beyond.drop.int
 
 diag.R:
 myplot.err
+sliding.bar.plot 
+
+neqtl.R:
+neqtl
+smoothall
+smoothchr
+
+runningmean.R:
+runningmean
+
+rug.R:
+add.rug
+qm.approx
+	myapprox
+
+utilhot.R:
+lininterp
+findpeaks
+get.chr.pos
 
 ##################################################################################################
 qtlhot.additional.functions.for.Brian.R:
