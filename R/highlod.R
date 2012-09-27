@@ -89,7 +89,8 @@ highlod <- function(scans, lod.thr = 0, drop.lod = 1.5,
   
   ## return data frame with genome row, trait column and lod value.
   out <- list(highlod = cbind.data.frame(row = rr, phenos = pheno.col[cc], lod = lod),
-              chr.pos = scans[,1:2])
+              chr.pos = scans[,1:2],
+              names = names(scans)[-(1:2)])
   class(out) <- c("highlod", "list")
   attr(out, "lod.thr") <- lod.thr
   attr(out, "drop.lod") <- drop.lod
@@ -101,7 +102,10 @@ summary.highlod <- function(object, ...)
   cat("frequency of high LOD entries by chromosome:\n")
   print(addmargins(table(object$chr.pos$chr[object$highlod$row])))
   cat("\nfrequency of high LOD entries per phenotype:\n")
-  print(table(table(object$highlod$pheno)))
+  tbl <- table(table(object$names[object$highlod$pheno]))
+  if(!is.null(object$names))
+    names(tbl) <- object$names[as.numeric(names(tbl))]
+  print(tbl)
   invisible()
 }
 plot.highlod <- function(x, ..., quant.level = NULL, sliding = FALSE)
@@ -204,4 +208,28 @@ scanone.permutations <- function(cross, pheno.col = seq(3, nphe(cross)),
     save(per.scan.hl, perms,
          file=paste("per.scan",pheno.set, i,"RData",sep="."))
   }
+}
+###################################################################
+pull.highlod <- function(object, chr, pos, ...)
+{
+  ## Kludge to get names if not in object
+  pheno.names <- object$names
+  if(is.null(pheno.names)) {
+    extra <- list(...)
+    m <- match("names", names(extra))
+    if(!is.na(m))
+      pheno.names <- extra[[m]]
+  }
+  wh.chr <- which(object$chr.pos$chr == chr)
+  ## Want to expand this to handle range of positions...
+  wh.pos <- which(object$chr.pos$pos[wh.chr] - min(pos) >= 0 &
+                  object$chr.pos$pos[wh.chr] - max(pos) <= 0)
+  wh.high <- which(object$highlod$row %in% wh.chr[wh.pos])
+  wh.row <- object$highlod[wh.high, "row"]
+
+  out <- data.frame(object$chr.pos[wh.row,], object$highlod[wh.high, -1])
+  ## Add phenotype names if available.
+  if(!is.null(pheno.names))
+    out$phenos <- pheno.names[out$phenos]
+  out
 }
