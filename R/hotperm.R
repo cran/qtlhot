@@ -99,17 +99,25 @@ hotperm <- function(cross, n.quant, n.perm, lod.thrs, alpha.levels, drop.lod = 1
   out
 }
 print.hotperm <- function(x, ...) print(summary(x, ...))
-summary.hotperm <- function(object, ...)
+summary.hotperm <- function(object, quant.levels, ...)
 {
   out <- quantile(object, ...)
 
   attr(out, "window") <- attr(object, "window")
 
-  ## 5-num summaries of sliding quantiles.
-  tmp <- apply(object$max.lod.quant, 2, fivenum)
-  tmp <- tmp[5:1,]
-  dimnames(tmp)[[1]] <- c("max","75%","median","25%","min")
-  out$max.lod.quant <- tmp
+  alpha.levels <- attr(object, "alpha.levels")
+  if(max(alpha.levels) < 0.5)
+    alpha.levels <- 1 - alpha.levels
+  n.quant <- ncol(object$max.lod.quant)
+  if(missing(quant.levels)) {
+    quant.levels <- log10(n.quant)
+    quant.levels <- round(10 ^ c(outer(log10(c(1,2,5)), seq(0, floor(quant.levels)), "+")))
+  }
+  quant.levels <- quant.levels[quant.levels <= n.quant]
+  if(max(quant.levels) < n.quant)
+    quant.levels <- c(quant.levels, n.quant)
+  out$max.lod.quant <- apply(object$max.lod.quant[, quant.levels, drop = FALSE],
+                             2, quantile, probs = alpha.levels, na.rm = TRUE)
   
   class(out) <- c("summary.hotperm", class(out))
   out

@@ -1369,26 +1369,31 @@ GetCis <- function(x, window = 10) {
   list(cis.reg = xx, cis.index = index) 
 }
 ##############################################################################
-GetCisCandReg <- function(highobj, cand.reg)
+GetCisCandReg <- function(highobj, cand.reg, lod.thr = NULL)
 {
   ## Restrict to being on same chromosome. This is fragile.
   cand.reg <- cand.reg[cand.reg[, 2] == cand.reg[, 4],]
-  n <- nrow(cand.reg)
-  trait.nms <- names(scan)[-c(1, 2)]
 
+  ## Restrict to LOD above lod.thr.
+  highobj <- highlod.thr(highobj, lod.thr)
+  
   chr.pos <- highobj$chr.pos
 
   ## Subset highlod to those phenos in cand.reg.
   pheno.cols <- unique(highobj$highlod$phenos)
-  tmp <- match(as.character(cand.reg[,1]), highobj$names[pheno.cols])
-  if(any(is.na(tmp)))
+  m.pheno <- match(as.character(cand.reg[,1]), highobj$names[pheno.cols])
+  if(any(is.na(m.pheno)))
     stop("cannot find cand.reg traits in highobj$names")
-  highlod <- highobj$highlod[highobj$highlod$phenos %in% pheno.cols[tmp], ]
+  m.pheno <- pheno.cols[m.pheno]
+  highlod <- highobj$highlod[highobj$highlod$phenos %in% m.pheno, ]
   
   ## Get start and end for each pheno. NB: may include multiple chr.
   h.index <- cumsum(table(highlod$phenos))
   h.index <- cbind(start = 1 + c(0, h.index[-length(h.index)]), end = h.index)
-
+  ## Now get in right order.
+  m.pheno <- order(m.pheno)
+  h.index[m.pheno,] <- h.index
+  
   ## Find lower and upper position around peak.
   tmpfn <- function(x, highlod, chr.pos) {
     h <- highlod[x[1]:x[2],, drop = FALSE]
@@ -1405,10 +1410,9 @@ GetCisCandReg <- function(highobj, cand.reg)
   is.cis <- (out$phys.pos >= out$peak.pos.lower &
              out$phys.pos <= out$peak.pos.upper)
   out <- out[is.cis,, drop = FALSE]
-  index <- NULL
   if(nrow(out))
-    index <- match(out[, 1], highobj$names)
-  list(cis.reg = out, cis.index = index)
+    attr(out, "cis.index") <- match(out[, 1], highobj$names)
+  out
 }
 ##############################################################################
 PerformanceSummariesKo <- function(alpha, nms, val.targets, all.orfs, 

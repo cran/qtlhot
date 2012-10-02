@@ -13,7 +13,7 @@ Conduct NL and N permutation tests.
 hotperm(cross, n.quant, n.perm, lod.thrs, alpha.levels, drop.lod = 1.5,
   window = NULL, verbose = FALSE, init.seed = 0)
 \method{print}{hotperm}(x, \dots)
-\method{summary}{hotperm}(object, \dots)
+\method{summary}{hotperm}(object, quant.levels, \dots)
 \method{quantile}{hotperm}(x, probs, \dots, lod.thr = NULL)
 \method{print}{summary.hotperm}(x, \dots)
 }
@@ -24,6 +24,8 @@ hotperm(cross, n.quant, n.perm, lod.thrs, alpha.levels, drop.lod = 1.5,
   \item{n.perm}{number of permutations}
   \item{lod.thrs}{vector of LOD thresholds}
   \item{alpha.levels}{vector of significance levels}
+  \item{quant.levels}{quantile levels, as number of traits, to show in
+    summary; default is 1, 2, 5, 10, \dots up to maximum recorded}
   \item{drop.lod}{LOD drop amount for support intervals}
   \item{window}{window size for smoothed hotspot size}
   \item{verbose}{verbose output if \code{TRUE}}
