@@ -1,4 +1,5 @@
 ## Modify to use names element of highlod object?
+## Fix so call with length(pheno2) == 1 and > 1 give same results; see JoinTestOutputs.
 CMSTtests <- function(cross, 
                       pheno1, 
                       pheno2,
@@ -917,15 +918,15 @@ FitAllTests <- function(cross, pheno1, pheno2, Q.chr, Q.pos, verbose = TRUE)
                      NULL, NULL, NULL, NULL, "all", "both", FALSE)
 
   nms <- pheno2
+  ntests <- length(pheno2)
   out$pvals.cit <- matrix(NA, ntests, 2, dimnames = list(nms, c("pval.1", "pval.2")))
 
-  ntests <- length(pheno2)
   for(k in 1 : ntests) {
     cit.mar <- find.marker(cross, Q.chr, Q.pos)
     LL <- pull.geno(cross)[, cit.mar]
     GG <- cross$pheno[, pheno1]
     TT <- cross$pheno[, pheno2[k]]
-    aux2 <- try(CitTests(LL, GG, TT), silent = TRUE)
+    aux2 <- try(qtlhot:::CitTests(LL, GG, TT), silent = TRUE)
     if(class(aux2) != "try-error") {
       out$pvals.cit[k,] <- aux2
     }
@@ -1198,6 +1199,78 @@ counts <- function(out, alpha, method=c("aic","bic","cit",
   output
 }
 ##############################################################################
+PerformanceSummariesKo <- function(alpha, nms, val.targets, all.orfs,
+                                   tests, cis.index)
+{
+  rnms <- c("aic", "bic", "j.bic", "p.bic", "np.bic", "j.aic", "p.aic", "np.aic", "cit")
+  nt <- length(nms)
+  TP <- FP <- TN <- FN <- NC <- data.frame(matrix(0, 9, nt))
+  tar <- rep(NA, nt)
+  names(TP) <- names(FP) <- names(TN) <- names(FN) <- names(NC) <- nms
+  row.names(TP) <- row.names(FP) <- row.names(TN) <- row.names(FN) <- row.names(NC) <- rnms
+  Causal <- NotCausal <- vector(mode = "list", length = 9)
+  for (k in 1 : nt) {
+      aux <- which(tests[[11]][,1] == nms[k])
+      aux.nms <- tests[[11]][aux, 2]
+      tar[k] <- length(aux)
+      for (i in 2 : 3) {
+        aux.rank <- apply(tests[[i]][aux, 1:4, drop = F], 1, rank)
+        aux.best <- apply(aux.rank, 2, function(x) which.min(x))
+        aux.index <- as.numeric(which(aux.best == 1))
+        Causal[[i - 1]] <- aux.nms[aux.index]
+        NotCausal[[i - 1]] <- aux.nms[-aux.index]
+      }
+      for (i in 4 : 9) {
+        Causal[[i - 1]] <- aux.nms[which(tests[[i]][aux, 1] <= alpha)]
+        NotCausal[[i - 1]] <-
+          aux.nms[c(which(tests[[i]][aux, 2] <= alpha),
+                    which(tests[[i]][aux, 3] <= alpha),
+                    which(tests[[i]][aux, 4] <= alpha))]
+      }
+      Causal[[9]] <-
+        aux.nms[which(tests[[10]][aux, 1] <= alpha & tests[[10]][aux, 2] > alpha)]
+      NotCausal[[9]] <-
+        aux.nms[c(which(tests[[10]][aux, 1] > alpha & tests[[10]][aux, 2] <= alpha),
+                  which(tests[[10]][aux, 1] >= alpha & tests[[10]][aux, 2] >= alpha))]
+      val <- val.targets[[match(nms[k], names(val.targets))]]
+      not.val <- all.orfs[-match(unique(c(nms[k], val)), all.orfs)]
+      for (i in 1 : 9) {
+        TP[i, k] <- length(!is.na(intersect(Causal[[i]], val)))
+        FP[i, k] <- length(!is.na(intersect(Causal[[i]], not.val)))
+        TN[i, k] <- length(!is.na(intersect(NotCausal[[i]], not.val)))
+        FN[i, k] <- length(!is.na(intersect(NotCausal[[i]], val)))
+      }
+      for (i in 4 : 9) {
+        NC[i - 1, k] <- length(c(which(tests[[i]][aux, 1] > alpha),
+                             which(tests[[i]][aux, 2] > alpha),
+                             which(tests[[i]][aux, 3] > alpha),
+                             which(tests[[i]][aux, 4] > alpha)))
+      }
+      NC[9, k] <- length(c(which(tests[[10]][aux, 1] < alpha),
+                           which(tests[[10]][aux, 2] < alpha)))
+  }
+  tp <- apply(TP, 1, sum)
+  fp <- apply(FP, 1, sum)
+  tn <- apply(TN, 1, sum)
+  fn <- apply(FN, 1, sum)
+  nc <- apply(NC, 1, sum)
+  prec <- tp/(tp + fp)
+  tpr <- tp/(tp + fn)
+  fpr <- fp/(fp + tn)
+  overall.1 <- data.frame(prec, tp, fp, tpr, fpr, tn, fn, nc)
+  tp <- apply(TP[, cis.index], 1, sum)
+  fp <- apply(FP[, cis.index], 1, sum)
+  tn <- apply(TN[, cis.index], 1, sum)
+  fn <- apply(FN[, cis.index], 1, sum)
+  nc <- apply(NC[, cis.index], 1, sum)
+  prec <- tp/(tp + fp)
+  tpr <- tp/(tp + fn)
+  fpr <- fp/(fp + tn)
+  overall.2 <- data.frame(prec, tp, fp, tpr, fpr, tn, fn, nc)
+  list(overall.1, overall.2, tar)
+}
+
+##############################################################################
 performance.summaries.cmst <- function(out, model, alpha=0.05, method)
 {
   ntests <- nrow(out[[1]])
@@ -1353,6 +1426,19 @@ JoinTestOutputs <- function(comap)
 
   for (k in 2 : length(comap)) {
     load(paste("output_ko_validation", reg.nms[k], "Rdata", sep="."))
+
+    if (length(out) != 10) { ## CMSTtests if length(pheno2) == 1
+      tmp <- t(out$Z.aic)
+      AIC.stats <- c(out$AICs, tmp[!is.na(tmp)])
+      tmp <- t(out$Z.bic)
+      BIC.stats <- c(out$BICs, tmp[!is.na(tmp)])      
+      out <- list(R2s = out$R2, AIC.stats = AIC.stats, BIC.stats = BIC.stats, 
+                  pvals.j.BIC = out$pvals.j.BIC, pvals.p.BIC = out$pvals.p.BIC, 
+                  pvals.np.BIC = out$pvals.np.BIC,  pvals.j.AIC = out$pvals.j.AIC, 
+                  pvals.p.AIC = out$pvals.p.AIC,  pvals.np.AIC = out$pvals.np.AIC,
+                  pvals.cit = out$pvals.cit)
+    }
+
     for (i in 1 : 10) {
       join.out[[i]] <- rbind(join.out[[i]], out[[i]])
     }
@@ -1360,6 +1446,16 @@ JoinTestOutputs <- function(comap)
       rbind(join.out[[11]], cbind(rep(reg.nms[k], length(comap[[k]])), comap[[k]]))
   }
  join.out
+}
+##############################################################################
+p.adjust.np <- function(tests, method = "BH")
+{
+  for(test.name in paste("pvals.np", c("AIC","BIC"), sep = "."))
+    for (i in seq(ncol(tests[[test.name]])))
+      tests[[test.name]][, i] <- p.adjust(tests[[test.name]][, i], method = method)
+
+  tests
+
 }
 ##############################################################################
 GetCis <- function(x, window = 10) {
@@ -1409,7 +1505,8 @@ GetCisCandReg <- function(highobj, cand.reg, lod.thr = NULL)
   out <- data.frame(cand.reg, peak.pos)
   is.cis <- (out$phys.pos >= out$peak.pos.lower &
              out$phys.pos <= out$peak.pos.upper)
-  out <- out[is.cis,, drop = FALSE]
+  ## Keep cis traits, but leave off peak.chr (since it == phys.chr).
+  out <- out[is.cis, -4, drop = FALSE]
   if(nrow(out))
     attr(out, "cis.index") <- match(out[, 1], highobj$names)
   out

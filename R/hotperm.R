@@ -37,6 +37,10 @@ hotperm <- function(cross, n.quant, n.perm, lod.thrs, alpha.levels, drop.lod = 1
   n.phe <- nphe(cross)
   n.ind <- nind(cross)
   n.quant <- min(n.quant, n.phe)
+
+  tmp <- table(sapply(cross$pheno, class))
+  if(length(tmp) > 1 | names(tmp)[1] != "numeric")
+    stop("all phenotypes in cross object must be numeric")
   
   s.quant <- seq(n.quant)
   quants <- 1 - (s.quant - 1) / n.phe

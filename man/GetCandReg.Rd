@@ -85,16 +85,14 @@ Elias Chaibub Neto
 }
 \examples{
 \dontrun{
-## scan = scanone object with all traits
-## annot = data frame with annotation of physical position
-cand.reg <- GetCandReg(scan = scan, annot = annot,
-  traits = names(ko.list.all), lod.thr = 3.47, drop = 1.5)
-cand.reg[1:10,]
-cis.cand.reg <- GetCisCandReg(cand.reg, scan, drop = 1.5, lod.thr = 3.47)
-cis.cand.reg[[1]][1:10,]
-comap.targets <- GetCoMappingTraits(traits = cand.reg, scan = scan,
-  lod.thr = 3.47, drop = 1.5)
-summary(unlist(lapply(comap.targets, length)))
+CMSTscan <- scanone(CMSTCross, pheno.col = 1:3, method = "hk")
+CMSThigh <- highlod(CMSTscan)
+traits <- names(CMSTCross$pheno)
+annot <- data.frame(name = traits, traits = traits, chr = rep(1, 3),
+ Mb.pos = c(55,10,100))
+annot$cM.pos <- annot$Mb.pos
+cand.reg <- GetCandReg(CMSThigh, annot, traits)
+cis.cand.reg <- GetCisCandReg(CMSThigh, cand.reg)
 }
 }
 \keyword{utilities}

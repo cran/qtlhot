@@ -41,6 +41,11 @@ hotperm(cross, n.quant, n.perm, lod.thrs, alpha.levels, drop.lod = 1.5,
 }
 \examples{
 \dontrun{
+example(include.hotspots)
+set.seed(123)
+pt <- scanone(ncross1, method = "hk", n.perm = 1000)
+alphas <- seq(0.01, 0.10, by=0.01)
+lod.thrs <- summary(pt, alphas)
 set.seed(12345)
 hotperm1 <- hotperm(cross = cross1,
                     n.quant = 300,
