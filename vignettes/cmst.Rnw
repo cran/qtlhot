@@ -282,7 +282,7 @@ annot
 targets <- list(y1 = c("y2","y3"))
 @ 
 
-Now we used the scans (via \texttt{CMSThigh}) and the annotation to identify candidate regions, the subset of cis-acting candidate regions, and co-mapping targets.
+Now we used the scans (via \texttt{CMSThigh}) and the annotation to identify candidate regulators, the subset of cis-acting candidate regulators, and co-mapping targets.
 
 <<>>=
 cand.reg <- GetCandReg(CMSThigh, annot, traits)
