@@ -1,4 +1,4 @@
-5248905b4491d9c77bc7240e72f93d71 *DESCRIPTION
+c98988ed8d30147fd38c05d103e68efa *DESCRIPTION
 812ed604c58795ede2862ce6a4e54dba *NAMESPACE
 b933207ad0c19257762b995ec2ac4730 *R/add.phenos.R
 40ac041662562e3657d6bb4629863b9d *R/big.R
@@ -9,7 +9,7 @@ c4ed18357856af32b838175ebe5a8a4b *R/hotperm.R
 6729dcaeace449eefc9840f1211c393b *R/max.R
 8afdc7d138adfa1284bd90cf63b8e605 *R/multiple_testing_sim_functions.R
 2691e0df2e1c4ad991982cee548e06db *R/neqtl.R
-2874d7aa81becc9058e66dc7d243a98b *R/parallel.R
+74cac815c73b19d03e60ed089bf6a141 *R/parallel.R
 5973406c7885b09e6c49f3df11081bdf *R/plotcmst.R
 43e15b98d5a239a39ff51bad8eeea7b3 *R/ravel.R
 caa27fc5b3a369254761fa583adb8588 *R/roc.R
@@ -23,13 +23,13 @@ dc2f482c9166cfc488dd0c0de6ee1642 *R/utilcmst.R
 39bf135b5eb185681d74d06c18549a1c *R/utilhot.R
 d41c35875c29eff957f88d263399c6ad *R/westwu.R
 d41d8cd98f00b204e9800998ecf8427e *README
-c11d97bf0278ba75468f817255c876a2 *data/CMSTCross.RData
-606790f8efb55d28b167f40677bd7966 *data/hotperm1.RData
+d9012f4bb4cc97d0cd07cf3bea96ca85 *data/CMSTCross.RData
+23f0def7ffc42f2388ec6a0f8fa72527 *data/hotperm1.RData
 89bff8163dbfdb0b2e5fe28276ecd4fa *inst/deprecated.R
 24564426040a80f5998c28e64b7ee028 *inst/doc/cmst.Rnw
-80d8d8d917e3f1e143fd1e09324cb234 *inst/doc/cmst.pdf
-254decd3e1def2abcb7cb891c742f46f *inst/doc/qtlhot.Rnw
-5018324b9f860d5b78da0358d61ea906 *inst/doc/qtlhot.pdf
+519cd9d96ca7356d29ad6d33701bb80d *inst/doc/cmst.pdf
+b370ae49363d35ff42cacf234c02595c *inst/doc/qtlhot.Rnw
+1aed798efaee5b528b221c7d090d3846 *inst/doc/qtlhot.pdf
 11704113157929b53b0e2c5ba015ad3e *inst/notes/cmst.txt
 52d8cbf0da7b5bdc67b82665b7e8c4c1 *inst/notes/code.txt
 c15b74d7121a2ddbe21306b65ccd3b64 *inst/notes/perm.txt
@@ -39,7 +39,7 @@ c15b74d7121a2ddbe21306b65ccd3b64 *inst/notes/perm.txt
 8178038dca48891725c7d1386beb4b11 *inst/parallel/Phase1.R
 5b4f049ad59aae7ee7efd58ae028a269 *inst/parallel/Phase2.R
 817f9a45083324b22e3ca1fc93eba97e *inst/parallel/Phase3.R
-c88d1fb262f39c3223b94e1293a5596d *inst/parallel/ReadMe
+2558f59c4c19ef51de1b21a4cf6f8d51 *inst/parallel/ReadMe
 c031e3c89986ff8dbe7ac049bb582c90 *inst/parallel/SOAR.phase0.R
 a5c3774fa0c5b298161fd419ec5bcb50 *inst/parallel/SOAR.post.R
 0eac83f946b60f56fe187ddcd4a7760f *inst/parallel/cross.RData
@@ -63,5 +63,5 @@ c7ca914d7fc9cf321a7e07750fcf1f32 *man/parallel.qtlhot.Rd
 22acf45d7a3bbdf3f9a177f9987bd1a6 *src/runningmean.h
 de1aeda81e8c8ab6ded25df5ae2dbfab *vignettes/Sweave.sty
 24564426040a80f5998c28e64b7ee028 *vignettes/cmst.Rnw
-254decd3e1def2abcb7cb891c742f46f *vignettes/qtlhot.Rnw
+b370ae49363d35ff42cacf234c02595c *vignettes/qtlhot.Rnw
 eb8b95adf890e0b10c31054ee13a2467 *vignettes/savedperms.RData
