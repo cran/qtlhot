@@ -71,7 +71,7 @@ lod.thr <- lod.thrs[5]
 ###################################################
 ### code chunk number 8: qtlhot.Rnw:124-125
 ###################################################
-scan1 <- scanone(cross1, pheno.col = 1:1000, method = "hk")
+scan1 <- qtl::scanone(cross1, pheno.col = 1:1000, method = "hk")
 
 
 ###################################################
