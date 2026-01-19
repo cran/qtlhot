@@ -1,26 +1,64 @@
-######################################################################
-# highlod.R
-#
-# Elias Chaibub Neto
-# Brian S Yandell
-# Aimee Teo Broman
-#
-#     This program is free software; you can redistribute it and/or
-#     modify it under the terms of the GNU General Public License,
-#     version 3, as published by the Free Software Foundation.
-# 
-#     This program is distributed in the hope that it will be useful,
-#     but without any warranty; without even the implied warranty of
-#     merchantability or fitness for a particular purpose.  See the GNU
-#     General Public License, version 3, for more details.
-# 
-#     A copy of the GNU General Public License, version 3, is available
-#     at http://www.r-project.org/Licenses/GPL-3
-#
-# Contains: highlod, sexbatch.covar, scanone.permutations,
-#           cat.scanone, lod.quantile.permutation,
-#           make.max.N, make.maxlod, smooth.neqtl
-######################################################################
+#' Pull high LOD values with chr and pos.
+#' 
+#' Pull high LOD values with chr and pos.
+#' 
+#' The \code{highlod} condenses a \code{scanone} object to the peaks above a
+#' \code{lod.thr} and/or within \code{drop.lod} of such peaks. The
+#' \code{pull.highlod} pulls out the entries at a particular genomic location
+#' or interval of locations. Summary, print, plot, max and quantile methods
+#' provide ways to examine a \code{highlod} object.
+#' 
+#' @param scans object of class \code{\link[qtl]{scanone}}
+#' @param lod.thr LOD threshold
+#' @param drop.lod LOD drop from max to keep for support intervals
+#' @param extend extend support interval just past \code{drop.lod}; matches
+#' behavior of \code{\link[qtl]{lodint}} when \code{TRUE}
+#' @param restrict.lod restrict to loci above LOD threshold if \code{TRUE};
+#' matches behavior of \code{\link[qtl]{lodint}} when \code{FALSE} (default)
+#' @param chr chromosome identifier
+#' @param pos position, or range of positions, in cM
+#' @param x,object object of class \code{highlod}
+#' @param window size of window for smoothing hotspot size
+#' @param quant.level vector of LOD levels for 1 up to
+#' \code{length(quant.level)} size hotspots
+#' @param sliding plot as sliding hotspot if \code{TRUE}
+#' @param \dots arguments passed along
+#' @return Data frame with \item{row}{row number in \code{\link[qtl]{scanone}}
+#' object} \item{phenos}{phenotype column number} \item{lod}{LOD score for
+#' phenotype at locus indicated by \code{row}}
+#' @author Brian S Yandell and Elias Chaibub Neto
+#' @seealso \code{\link{highlod}}, \code{\link{hotperm}}
+#' @keywords utilities
+#' @examples
+#' 
+#' ncross1 <- sim.null.cross(chr.len = rep(100, 4),
+#'                           n.mar = 51,
+#'                           n.ind = 100,
+#'                           type = "bc",
+#'                           n.phe = 1000,
+#'                           latent.eff = 3,
+#'                           res.var = 1,
+#'                           init.seed = 123457)
+#' cross1 <- include.hotspots(cross = ncross1,
+#'                            hchr = c(2, 3, 4),
+#'                            hpos = c(25, 75, 50),
+#'                            hsize = c(100, 50, 20),
+#'                            Q.eff = 2,
+#'                            latent.eff = 3,
+#'                            lod.range.1 = c(2.5, 2.5),
+#'                            lod.range.2 = c(5, 8),
+#'                            lod.range.3 = c(10, 15),
+#'                            res.var = 1,
+#'                            n.phe = 1000,
+#'                            init.seed = 12345)
+#' scan1 <- scanone(cross1, pheno.col = 1:1000, method = "hk")
+#' high1 <- highlod(scan1, lod.thr = 2.11, drop.lod = 1.5)
+#' pull.highlod(high1, chr = 2, pos = 24)
+#' summary(high1, lod.thr = 2.44)
+#' max(high1, lod.thr = seq(2.11, 3.11, by = .1))
+#' 
+#' @export
+#' @importFrom qtl getsex lodint nind nphe scanone 
 highlod <- function(scans, lod.thr = 0, drop.lod = 1.5,
                     extend = TRUE, restrict.lod = FALSE, ...)
 {
@@ -96,11 +134,20 @@ highlod <- function(scans, lod.thr = 0, drop.lod = 1.5,
   attr(out, "drop.lod") <- drop.lod
   out
 }
+#' @method print highlod
+#' @rdname highlod
+#' @export
 print.highlod <- function(x, ...) print(summary(x, ...))
+#' @method summary highlod
+#' @rdname highlod
+#' @export
 summary.highlod <- function(object, ...)
 {
   summary(hotsize(object, ...))
 }
+#' @method plot highlod
+#' @rdname highlod
+#' @export
 plot.highlod <- function(x, ..., quant.level = NULL, sliding = FALSE)
 {
   
@@ -128,7 +175,7 @@ highlod.thr <- function(highobj, lod.thr)
   highobj
 }
 ###################################################################################
-cat.scanone <- function(dirpath = ".", filenames = permfiles, chr.pos)
+cat_scanone <- function(dirpath = ".", filenames = permfiles, chr.pos)
 {
   ## Folder should contain qtl::scanone highlods data across all traits for ONE permutation
   permfiles <- list.files(dirpath, paste("per.scan", "*", "RData", sep = "."))
@@ -137,7 +184,7 @@ cat.scanone <- function(dirpath = ".", filenames = permfiles, chr.pos)
   per.scan.hl <- NULL
   rm(per.scan.hl)
   
-  for(i in 1:length(filenames)) {
+  for(i in seq_along(filenames)) {
     highobj <- with(filenames[i], {
       if(i==1) per.scan.hl else rbind.data.frame(highobj, per.scan.hl)
     })
@@ -156,7 +203,7 @@ sexbatch.covar <- function(cross, batch.effect, verbose = FALSE)
     batch <- cross$pheno[,batch.effect, drop = FALSE]
     tmp <- stats::formula(paste("~ factor(", batch.effect, ")"))
     if(verbose)
-      cat("sexbatch.covar", names(tmp), levels(factor(batch[[1]])), "\n")
+      cat("sexbatch.covar", names(tmp), unique(factor(batch[[1]])), "\n")
     if(verbose)
       cat("sexbatch.covar", dim(batch), "\n")
     batch <- stats::model.matrix(tmp,batch)[,-1, drop = FALSE]
@@ -205,6 +252,8 @@ scanone.permutations <- function(cross, pheno.col = seq(3, qtl::nphe(cross)),
   }
 }
 ###################################################################
+#' @rdname highlod
+#' @export
 pull.highlod <- function(object, chr, pos, ...)
 {
   ## Kludge to get names if not in object

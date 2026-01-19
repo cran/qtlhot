@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Elias Chaibub Neto and Brian S. Yandell" />
+
+<meta name="date" content="2026-01-19" />
+
+<title>Qtlhot Tutorial</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Qtlhot Tutorial</h1>
+<h4 class="author">Elias Chaibub Neto and Brian S. Yandell</h4>
+<h4 class="date">2026-01-19</h4>
+
+
+
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>QTL hotspots, groups of traits co-mapping to the same genomic
+location, are a common feature of genetical genomics studies. Genomic
+locations associated with many traits are biologically interesting since
+they may harbor influential regulators. Nonetheless, non-genetic
+mechanisms, uncontrolled environmental factors and unmeasured variables
+are capable of inducing a strong correlation structure among clusters of
+transcripts, and as a consequence, whenever a transcript shows a
+spurious linkage, many correlated transcripts will likely map to the
+same locus, creating a spurious QTL hotspot. Permutation approaches that
+do not take into account the phenotypic correlation tend to
+underestimate the size of the hotspots that might appear by change in
+these situations (Breitling et al. 2008).</p>
+<p>This issue motivated the development of permutation tests that
+preserve the correlation structure of the phenotypes in order to
+determine the significance of QTL hotspots (Breitling et al. 2008,
+Chaibub Neto et al. 2012). In this tutorial we present software tools
+implementing the <span class="math inline">\(NL\)</span>-method (Chaibub
+Neto et al. 2012), the <span class="math inline">\(N\)</span>-method
+(Breitling et al. 2008), and the <span class="math inline">\(Q\)</span>-method (West et al. 2007, Wu et
+al. 2008) permutation approaches.</p>
+</div>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>This tutorial illustrates the application of the <span class="math inline">\(NL\)</span>-, <span class="math inline">\(N\)</span>- and <span class="math inline">\(Q\)</span>-methods, implemented in the R package,
+to a few toy examples. The package is built over the package (Broman et
+al. 2003), and we assume the reader is familiar with it.</p>
+</div>
+<div id="basic-functionality-with-no-real-hotspots" class="section level2">
+<h2>Basic functionality with No Real Hotspots</h2>
+<p>In this section we consider two toy simulated examples. In the first
+we simulate highly correlated phenotypes. In the second, we simulate
+uncorrelated phenotypes.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(qtlhot)</span></code></pre></div>
+<p>We start by simulating a
+<code>null backcross&quot; data set composed of 1,000 phenotypes, 4 chromosomes, 51 equally spaced genetic markers per chromosome, and 100 individuals, with the \texttt{sim.null.cross} function. The \texttt{latent.eff} parameter control the amount of correlation among the phenotypes. Each phenotype $k$ is generated according to the model $Y_k = \theta L + \epsilon_k$, where $L \sim N(0,\sigma^2)$ is a latent variable, $\theta$ represents the effect (\texttt{latent.eff}) of the latent variable on the phenotype, and $\epsilon_k \sim N(0, \sigma^2)$ represents a residual error term with $\sigma^2$ set to \texttt{res.var}. Note that we do not simulate any QTLs in a</code>null
+cross” and any linkages we might detect in such a data set are due
+entirely to chance.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>ncross1 <span class="ot">&lt;-</span> <span class="fu">sim.null.cross</span>(<span class="at">chr.len =</span> <span class="fu">rep</span>(<span class="dv">100</span>, <span class="dv">4</span>),</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>                          <span class="at">n.mar =</span> <span class="dv">51</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                          <span class="at">n.ind =</span> <span class="dv">100</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>                          <span class="at">type =</span> <span class="st">&quot;bc&quot;</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>                          <span class="at">n.phe =</span> <span class="dv">1000</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                          <span class="at">latent.eff =</span> <span class="dv">3</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                          <span class="at">res.var =</span> <span class="dv">1</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>                          <span class="at">init.seed =</span> <span class="dv">123457</span>)</span></code></pre></div>
+<p>The function takes the ``null cross” as an input and includes 3
+hotspots of size at position of chromosome into it. Explicitly, it
+simulates each one of the hotspots according to the model <span class="math inline">\(Y_k^\ast = \beta M + Y_k\)</span>, where <span class="math inline">\(Y_k\)</span> is the phenotype generated by the
+function; <span class="math inline">\(M = \gamma \, Q +
+\epsilon_M\)</span> is a master regulator that affects all phenotypes in
+the hotspot; <span class="math inline">\(Q\)</span> is a QTL located at
+position of chromosome ; <span class="math inline">\(\gamma\)</span>
+represents the QTL effect (); <span class="math inline">\(\epsilon_M
+\sim N(0, \sigma^2)\)</span>; and <span class="math inline">\(\beta\)</span> is computed such that the
+association between <span class="math inline">\(Y_k^\ast\)</span> and Q,
+measured by the LOD score, is given (theoretically) by a valued sampled
+from the user specified LOD score range ( and etc).</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>cross1 <span class="ot">&lt;-</span> <span class="fu">include.hotspots</span>(<span class="at">cross =</span> ncross1,</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>                           <span class="at">hchr =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                           <span class="at">hpos =</span> <span class="fu">c</span>(<span class="dv">25</span>, <span class="dv">75</span>, <span class="dv">50</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>                           <span class="at">hsize =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">50</span>, <span class="dv">20</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>                           <span class="at">Q.eff =</span> <span class="dv">2</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>                           <span class="at">latent.eff =</span> <span class="dv">3</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>                           <span class="at">lod.range.1 =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">2.5</span>),</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>                           <span class="at">lod.range.2 =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">8</span>),</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>                           <span class="at">lod.range.3 =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">15</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>                           <span class="at">res.var =</span> <span class="dv">1</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>                           <span class="at">n.phe =</span> <span class="dv">1000</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>                           <span class="at">init.seed =</span> <span class="dv">12345</span>)</span></code></pre></div>
+<p>Note that by choosing we generate highly correlated phenotype data.
+The distribution of the correlation values for each pair of phenotypes
+is given below.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>ncor1 <span class="ot">&lt;-</span> <span class="fu">cor</span>(cross1<span class="sc">$</span>pheno)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">summary</span>(ncor1[<span class="fu">lower.tri</span>(ncor1)])</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt;  0.4343  0.8559  0.8929  0.8654  0.9063  0.9725</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">rm</span>(ncor1)</span></code></pre></div>
+<p>Next we obtain standard permutation thresholds (Churchill and Doerge
+1994) for single trait QTL mapping analysis for the sequence ,
+representing target genome wide error rates (GWER).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>alphas <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">0.01</span>, <span class="fl">0.10</span>, <span class="at">by=</span><span class="fl">0.01</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co"># Following works but breaks CRAN build:</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>lod.thrs <span class="ot">&lt;-</span> <span class="fu">summary</span>(pt.scanone, alphas)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#lod.thrs &lt;- qtl:::summary.scanoneperm(pt.scanone, alphas)</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>lod.thrs</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; LOD thresholds (1000 permutations)</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;      lod</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; 1%  3.19</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; 2%  3.01</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; 3%  2.77</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; 4%  2.63</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; 5%  2.54</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; 6%  2.42</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; 7%  2.34</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; 8%  2.25</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; 9%  2.19</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt; 10% 2.16</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>lod.thr <span class="ot">&lt;-</span> lod.thrs[<span class="dv">5</span>]</span></code></pre></div>
+<p>We perform QTL mapping analysis for 1,000 phenotypes using
+Haley-Knott regression, and keep only the = 1.5 LOD support interval
+(Manichaikul et al. 2006) around significant peaks (above ) at each
+chromosome for each trait. LOD support intervals are the most commonly
+used interval estimate for the location of a QTL.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>scan1 <span class="ot">&lt;-</span> qtl<span class="sc">::</span><span class="fu">scanone</span>(cross1, <span class="at">pheno.col =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">1000</span>, <span class="at">method =</span> <span class="st">&quot;hk&quot;</span>)</span></code></pre></div>
+<p>The routine just saves the LOD support intervals for significant
+peaks, which dramatically reduces the object size from the result of .
+We can examine the maximum hotspot size for each possible single trait
+threshold using the method for objects. The first column gives the
+counts associated with QTL mapping threshold of 3.19, whereas the last
+one shows the counts based on the more liberal threshold 2.16. Note how
+the counts increase as the QTL mapping thresholds decrease.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>high1 <span class="ot">&lt;-</span> <span class="fu">highlod</span>(scan1, <span class="at">lod.thr =</span> <span class="fu">min</span>(lod.thrs), <span class="at">drop.lod =</span> <span class="fl">1.5</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">max</span>(high1, <span class="at">lod.thr =</span> lod.thrs)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt;        chr pos max.N lod.thr</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; D3M36    3  70    50    3.19</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; D3M38    3  74    50    3.01</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; D2M13    2  24    63    2.77</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; D2M131   2  24    71    2.63</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; D2M12    2  22    79    2.54</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; D2M121   2  22    84    2.42</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; D1M34    1  66    96    2.34</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; D1M341   1  66   125    2.25</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; D1M342   1  66   151    2.19</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; D1M343   1  66   164    2.16</span></span></code></pre></div>
+<p>Next we infer the hotspot architecture at varying QTL mapping
+thresholds. In other words, for each genomic position, we count the
+number of traits that map to it with a LOD score equal or higher than
+the threshold in . The object is a object with added attributes and
+specialized summary and plot methods. The summary shows the counts for
+the most significant loci per chromosome, essentially using the method
+for objects.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>hots1 <span class="ot">&lt;-</span> <span class="fu">hotsize</span>(high1, <span class="at">lod.thr =</span> lod.thr)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">summary</span>(hots1)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; hotsize elements:  chr pos max.N </span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt; LOD threshold: 2.544221</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt;       chr pos max.N</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; D1M34   1  66    54</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; D2M12   2  22    79</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; D3M38   3  74    50</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; D4M27   4  52    20</span></span></code></pre></div>
+<p>We plot the hotspot architecture inferred using the single trait
+permutation threshold 2.54 (<span class="math inline">\(\alpha =
+0.05\)</span>). Figure @ref(plotex1counts) shows the counts across the
+genome. Recall that in the call of function we set to simulate 3
+hotspots: (1) a hotspot of size 100 at position 25cM of chromosome 2
+with LOD scores around 2.5; (2) a hotspot of size 50 at position 75cM of
+chromosome 3 with LOD scores ranging from 5 to 8; and (3) a hotspot of
+size 20 at position 50cM of chromosome 4 with LOD scores ranging from 10
+to 15. Nonetheless, Figure @ref(plotex1counts) shows several spurious
+peaks on chromosome 1, that arise because of the high correlation of the
+phenotypes.</p>
+<p>Next, we perform permutation tests to assess the statistical
+significance of the hotspots detected on Figure @ref(plotex1counts). We
+consider the <span class="math inline">\(N\)</span>- and <span class="math inline">\(NL\)</span>-methods. [The <span class="math inline">\(Q\)</span> method of West and Wu is documented in
+the manual page but not shown here.] The function implements the <span class="math inline">\(N\)</span>- and <span class="math inline">\(NL\)</span>-methods’ permutation schemes (see
+Chaibub Neto et al. 2012, for details). The parameter sets the maximum
+hotspot size to be analyzed by the <span class="math inline">\(NL\)</span>-method. The parameter controls the
+magnitude of the LOD support interval computation during the LOD profile
+processing step. The function’s output is a list with two elements: and
+.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">names</span>(hotperm1)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;max.lod.quant&quot; &quot;max.N&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="fu">summary</span>(hotperm1)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; max.N: hotspot threshold by single-trait LOD threshold and significance level</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt;      99% 98% 97% 96% 95% 94% 93% 92% 91% 90%</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; 3.11  52  43  39  30  28  10   8   7   7   6</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; 2.89  80  72  62  59  51  22  19  17  16  13</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; 2.68 156 151 134  96  59  51  44  41  28  21</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; 2.57 209 191 188 120  77  71  67  60  35  31</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; 2.44 294 275 270 177 119 110  92  79  63  60</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 2.34 375 345 332 227 163 154 127  95  88  87</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; 2.26 441 407 379 270 203 199 162 116 112 111</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; 2.2  485 452 426 306 240 233 201 145 139 132</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; 2.15 516 497 472 334 267 257 234 169 160 153</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; 2.11 553 532 504 373 306 287 266 195 181 178</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; max.lod.quant: LOD threshold by hotspot size quantile and significance level</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;      99%  98%  97%  96%  95%  94%  93%  92%  91%  90%</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; 1   5.42 4.90 4.63 4.35 4.28 4.20 4.12 4.03 3.91 3.78</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt; 2   4.98 4.74 4.51 4.27 4.00 3.74 3.71 3.68 3.59 3.51</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; 5   4.79 4.69 4.59 4.44 4.28 4.12 3.92 3.71 3.51 3.49</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; 10  4.48 4.46 4.44 4.38 4.23 4.08 3.92 3.78 3.66 3.53</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt; 20  4.23 4.20 4.18 4.16 4.14 4.03 3.92 3.80 3.69 3.58</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt; 50  3.84 3.74 3.64 3.55 3.45 3.35 3.25 3.15 3.06 3.05</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt; 100 3.72 3.66 3.60 3.54 3.48 3.42 3.36 3.31 3.25 3.19</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt; 200 3.38 3.36 3.34 3.31 3.29 3.26 3.24 3.21 3.19 3.16</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt; 300 3.23 3.23 3.23 3.23 3.23 3.23 3.23 3.23 3.23 3.23</span></span></code></pre></div>
+<p>The element of the object stores the output of the <span class="math inline">\(N\)</span>-method’s permutations and is given by a
+matrix with 100 rows representing the permutations, and 10 columns
+representing the QTL mapping thresholds. Entry <span class="math inline">\(ij\)</span> stores the maximum genome wide hotspot
+size detected at permutation <span class="math inline">\(i\)</span>
+using the QTL mapping threshold <span class="math inline">\(j\)</span>.
+The element of the is a 10 by 10 matrix with rows indexing the QTL
+mapping thresholds and columns indexing the target genome wide error
+rates. Each entry <span class="math inline">\(ij\)</span> shows the
+hotspot size above which a hotspot is considered significant at a GWER
+<span class="math inline">\(j\)</span> using the QTL mapping threshold
+<span class="math inline">\(i\)</span>. As before, our interest focus on
+the diagonal, and the <span class="math inline">\(N\)</span>-method’s
+threshold that controls the hotspot GWER at a 5% level when the QTL
+mapping was controlled at a GWER of 5% (single trait LOD threshold of
+2.54) is 119 traits per hotspot (rounded up). Note that according to the
+<span class="math inline">\(N\)</span>-method, none of the hotspots on
+Figure @ref(plotex1counts) is significant.</p>
+<p>The element of the object stores the output of the <span class="math inline">\(NL\)</span>-method’s permutations and is given by
+a matrix with 100 rows representing the permutations, and 300 columns
+representing the hotspot sizes analyzed. Entry <span class="math inline">\(ij\)</span> stores the maximum genome wide <span class="math inline">\(qLOD(n)\)</span> value–the <span class="math inline">\(n\)</span>th LOD score in a sample ordered from
+highest to lowest–computed at permutation <span class="math inline">\(i\)</span> using the QTL mapping threshold <span class="math inline">\(j\)</span>. The element of the shows just the
+extremes and quartiles.</p>
+<p>The element of the contains the sliding LOD quantiles from 1 up to
+300 for each single trait LOD threshold. This can be used to plot how
+many traits pass the sliding LOD threshold, and are significant, at each
+locus in the genome. Figure @ref(plotex1slidingbar) shows the hotspot
+significance profile for the thresholds targeting GWER at a 5% level.
+Note that we only consider LODs above , and chromosome 1 has none.</p>
+<p>Figure @ref(plotex1slidingbar) depicts a sliding window of hotspot
+size thresholds ranging from <span class="math inline">\(n=1,\ldots,N\)</span>, where <span class="math inline">\(N=100\)</span> corresponds to the (approximate)
+hotspot size threshold derived from the <span class="math inline">\(N\)</span>-method. For each genomic location this
+figure shows the hotspot sizes at which the hotspot was significant,
+that is, at which the hotspot locus had more traits than the hotspot
+size threshold on the left mapping to it with a LOD score higher than
+the threshold on the right than expected by chance. For example, the
+hotspot on chromosome 3 was significant at all sizes from 1 to 50,
+meaning that at least 1 trait mapped to the hotspot locus with LOD
+higher than 3.79, at least 20 traits mapped to the hotspot locus with
+LOD higher than 3.19, and so on up to hotspot size 50, all with LODs
+higher than 2.97. The <span class="math inline">\(N\)</span>-method that
+did not detect any hotspots, but the <span class="math inline">\(NL\)</span>-method’s sliding window correctly
+detected the simulated hotspots and showed that the apparent hotspots on
+chromosome 1 were noisy artifacts.</p>
+<p>Figure @ref(plotex1elias) is another way to visualize this, using the
+sliding LOD threshold (blue cureve). We also show a 5-cM smoothing
+window applied to the counts (red curve). Note that with the sliding LOD
+threshold, no hotspots (or individual traits) are significant on chr 1,
+and hotspots of size 20 are found on chr 2 and 4, with a significant
+hotspot of size 50 on chr 3.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">summary</span>(hotsq1)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt; hotsize elements:  chr pos max.N max.N.window quant </span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; LOD threshold: 2.544221 </span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; smooth window: 5 </span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; quantile level summary:</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt;   2.544   2.630   3.015   2.953   3.168   3.790</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co">#&gt;       chr pos max.N max.N.window quant</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; D1M34   1  66    54           38     0</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; D2M13   2  24    79           78    78</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; D3M39   3  76    50            5    47</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; D4M29   4  56    20            3    20</span></span></code></pre></div>
+</div>
+<div id="example-with-uncorrelated-phenotypes" class="section level2">
+<h2>Example with Uncorrelated Phenotypes</h2>
+<p>Next we consider a second toy example with uncorrelated phenotype
+data. We repeat the simulation and analysis steps presented previously
+changing to zero.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>ncor2 <span class="ot">&lt;-</span> <span class="fu">cor</span>(cross2<span class="sc">$</span>pheno)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">summary</span>(ncor2[<span class="fu">lower.tri</span>(ncor2)])</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt;      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; -0.471212 -0.067418  0.001111  0.002256  0.070412  0.724543</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="fu">rm</span>(ncor2)</span></code></pre></div>
+<p>The <span class="math inline">\(N\)</span>-method, as expected, gave
+rise to much smaller thresholds in this second example with uncorrelated
+phenotypes. Additionally, inspection of Figure @ref(plotex2counts) shows
+no spurious hotspots on chromosome 1.</p>
+<p>Figure @ref(plotex2slidingbar) presents the hotspot significance
+profile targeting 5% GWER. For this second example, all methods
+correctly detected the simulated hotspots.</p>
+<p>Figure @ref(plotex2sigct) shows another way to represent significant
+hotspots. We overlay the largest significant hotspot counts using the
+sliding quantiles in red on top of the curve on Figure
+@ref(plotex2counts). Notice that the large sizes are all significant,
+but only small sizes corresponding to larger LOD scores are significant.
+We add a right axis with the sliding LOD thresholds.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>\end{document}</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,7 +1,18 @@
 Package: qtlhot
-Version: 1.0.4
-Date: 2018-04-05
-Author: Elias Chaibub Neto <echaibub@hotmail.com> and Brian S Yandell <brian.yandell@wisc.edu>
+Version: 1.2.10
+Date: 2026-01-19
+Authors@R: c(person(given = c("Elias", "Chaibub"),
+                        family = "Neto",
+                        role = "aut",
+                        email = "echaibub@hotmail.com"),
+                 person(given = c("Brian", "S"),
+                        family = "Yandell",
+                        role = "aut",
+                        email = "brian.yandell@wisc.edu"),
+                 person(given = c("Brian", "S."),
+                        family = "Yandell",
+                        role = "cre",
+                        email = "brian.yandell@wisc.edu"))
 Title: Inference for QTL Hotspots
 Description: Functions to infer co-mapping trait hotspots and causal models.
   Chaibub Neto E, Keller MP, Broman AF, Attie AD, Jansen RC, Broman KW, Yandell BS (2012) 
@@ -11,13 +22,19 @@ Description: Functions to infer co-mapping trait hotspots and causal models.
   Modeling causality for pairs of phenotypes in system genetics. Genetics 193 : 1003-1013.
   <doi:10.1534/genetics.112.147124>.
 Maintainer: Brian S. Yandell <brian.yandell@wisc.edu>
-Depends: stats,qtl,mnormt,utils,corpcor, R (>= 2.10)
-LazyLoad: yes
-LazyData: yes
+Depends: stats,qtl,mnormt,utils,corpcor,broman, R (>= 3.5.0)
+LazyLoad: true
+LazyData: true
 License: GPL (>= 2)
-URL: http://www.stat.wisc.edu/~yandell/statgen
-RoxygenNote: 6.0.1
-NeedsCompilation: yes
-Packaged: 2018-04-05 19:01:54 UTC; brianyandell
+URL: https://github.com/byandell-sysgen/qtlhot
+Encoding: UTF-8
+RoxygenNote: 7.3.3
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2026-01-19 15:44:17 UTC; brianyandell
+Author: Elias Chaibub Neto [aut],
+  Brian S Yandell [aut],
+  Brian S. Yandell [cre]
 Repository: CRAN
-Date/Publication: 2018-04-05 21:50:55 UTC
+Date/Publication: 2026-01-19 20:00:02 UTC

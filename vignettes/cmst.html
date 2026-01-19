@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Elias Chaibub Neto and Brian S. Yandell" />
+
+<meta name="date" content="2026-01-19" />
+
+<title>Causal Model Selection Hypothesis Tests in Systems Genetics:  a tutorial</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Causal Model Selection Hypothesis Tests in
+Systems Genetics:  a tutorial</h1>
+<h4 class="author">Elias Chaibub Neto and Brian S. Yandell</h4>
+<h4 class="date">2026-01-19</h4>
+
+
+
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>Current efforts in systems genetics have focused on the development
+of statistical approaches that aim to disentangle causal relationships
+among molecular phenotypes in segregating populations. Model selection
+criterions, such as the AIC and BIC, have been widely used for this
+purpose, in spite of being unable to quantify the uncertainty associated
+with the model selection call. In this tutorial we illustrate the use of
+software implementing the causal model selection hypothesis tests
+proposed by Chaibub Neto et al. (2012).</p>
+</div>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>This tutorial illustrates the basic functionality of the CMST
+routines in the R package using few simulated toy examples. The analysis
+of a yeast genetical genomics data-set presented in Chaibub Neto et
+al. (2012) is reproduced in a separate package, . The package depends on
+(Broman et al. 2003), and we assume the reader is familiar with it.</p>
+</div>
+<div id="basic-functionality" class="section level2">
+<h2>Basic functionality</h2>
+<p>Here, we illustrate the basic functionality of the CMST routines in
+the package in a toy simulated example.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(qtlhot)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; Loading required package: qtl</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; Loading required package: mnormt</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; Loading required package: corpcor</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; Loading required package: broman</span></span></code></pre></div>
+<p>We first use the function to simulate a object with 3 phenotypes,
+<span class="math inline">\(y_1\)</span>, <span class="math inline">\(y_2\)</span> and <span class="math inline">\(y_3\)</span>, where <span class="math inline">\(y_1\)</span> has a causal effect on both <span class="math inline">\(y_2\)</span> and <span class="math inline">\(y_3\)</span>. The simulated cross data set, , is
+composed of: 100 individuals (); 3 chromosomes of length 100cM (); 101
+unequally spaced markers per chromosome ( and ); additive genetic effect
+set to 1 (); dominance genetic effect set to 0 (); residual variances
+for <span class="math inline">\(y_1\)</span> () and the other phenotypes
+() set to 0.4 and 0.1, respectively; backcross cross type (); and
+phenotype data transformed to normal scores (). The argument ,
+represents the causal effect of <span class="math inline">\(y_1\)</span>
+on the other phenotypes (i.e., coefficients of the regressions of <span class="math inline">\(y_2 = 0.5 \, y_1 + \epsilon\)</span> and <span class="math inline">\(y_3 = 0.5 \, y_1 + \epsilon\)</span>). The length
+of beta controls the number of phenotypes to be simulated.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">987654321</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>CMSTCross <span class="ot">&lt;-</span> <span class="fu">SimCrossCausal</span>(<span class="at">n.ind =</span> <span class="dv">100</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                        <span class="at">len =</span> <span class="fu">rep</span>(<span class="dv">100</span>, <span class="dv">3</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>                        <span class="at">n.mar =</span> <span class="dv">101</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>                        <span class="at">beta =</span> <span class="fu">rep</span>(<span class="fl">0.5</span>, <span class="dv">2</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                        <span class="at">add.eff =</span> <span class="dv">1</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                        <span class="at">dom.eff =</span> <span class="dv">0</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>                        <span class="at">sig2.1 =</span> <span class="fl">0.4</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>                        <span class="at">sig2.2 =</span> <span class="fl">0.1</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>                        <span class="at">eq.spacing =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>                        <span class="at">cross.type =</span> <span class="st">&quot;bc&quot;</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>                        <span class="at">normalize =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>We compute the genotype conditional probabilities using Haldane’s map
+function, genotype error rate of 0.0001, and setting the maximum
+distance between positions at which genotype probabilities were
+calculated to 1cM.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>CMSTCross <span class="ot">&lt;-</span> <span class="fu">calc.genoprob</span>(CMSTCross, <span class="at">step =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p>We perform QTL mapping using Haley-Knott regression (Haley and Knott
+1992), and summarize the results for the 3 phenotypes. Figure
+@ref(lod.profiles) presents the LOD score profiles for all 3 phenotypes.
+The black, blue and red curves represent the LOD profiles of phenotypes
+<span class="math inline">\(y_1\)</span>, <span class="math inline">\(y_2\)</span> and <span class="math inline">\(y_3\)</span>, respectively.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>Scan <span class="ot">&lt;-</span> <span class="fu">scanone</span>(CMSTCross, <span class="at">pheno.col =</span> <span class="dv">1</span> <span class="sc">:</span> <span class="dv">3</span>, <span class="at">method =</span> <span class="st">&quot;hk&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">summary</span>(Scan[, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)], <span class="at">thr =</span> <span class="dv">3</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;          chr pos   y1</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; c1.loc55   1  55 12.6</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">summary</span>(Scan[, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)], <span class="at">thr =</span> <span class="dv">3</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;          chr pos   y2</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; c1.loc55   1  55 5.27</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="fu">summary</span>(Scan[, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>)], <span class="at">thr =</span> <span class="dv">3</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;       chr  pos   y3</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; D1M50   1 55.5 7.58</span></span></code></pre></div>
+<p>Phenotypes <span class="math inline">\(y_1\)</span> and <span class="math inline">\(y_2\)</span> map to exactly same QTL at position
+55 cM on chromosome 1. Phenotype <span class="math inline">\(y_3\)</span> maps to a QTL at position 55.5 cM.
+Whenever two phenotypes map to close, but not exactly identical,
+positions we are faced with the question of which QTL to use as causal
+anchor. Instead of making a (sometimes) arbitrary choice, our approach
+is to compute the joint LOD profile of both phenotypes and use the QTL
+detected by this joint mapping approach as the causal anchor. The
+function performs the joint QTL mapping for phenotypes whose marginal
+LOD peak positions are higher than a certain LOD threshold (), and are
+less than a fixed distance apart (). The function can also handle
+separate additive and interacting covariates for each phenotype (, , ,
+). In this simulated example the QTL detected by the joint analysis
+agreed with phenotype’s <span class="math inline">\(y_1\)</span>
+QTL.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>commqtls <span class="ot">&lt;-</span> <span class="fu">GetCommonQtls</span>(CMSTCross,</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>                          <span class="at">pheno1 =</span> <span class="st">&quot;y1&quot;</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                          <span class="at">pheno2 =</span> <span class="st">&quot;y3&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>                          <span class="at">thr =</span> <span class="dv">3</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                          <span class="at">peak.dist =</span> <span class="dv">5</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                          <span class="at">addcov1 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>                          <span class="at">addcov2 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>                          <span class="at">intcov1 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>                          <span class="at">intcov2 =</span> <span class="cn">NULL</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>commqtls</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt;          Q Q.chr Q.pos</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; 1 c1.loc55     1    55</span></span></code></pre></div>
+<p>Now, we fit our causal model selection tests for phenotypes <span class="math inline">\(y_1\)</span> and <span class="math inline">\(y_2\)</span> using the function. The and arguments
+specify the chromosome and position (in cM) of the QTL to be used as a
+causal anchor. The argument specify which version of the CMST test
+should be used. The options , and represent, respectively, the
+parametric, non-parametric, joint parametric versions of the CMST test.
+The option fits all three versions. The argument specifies whether we
+should test statistics based on the AIC (), BIC (), or both ()
+penalties. In this particular call we computed all 3 versions using both
+penalties fitting 6 separate CMST tests.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>nms <span class="ot">&lt;-</span> <span class="fu">names</span>(CMSTCross<span class="sc">$</span>pheno)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>out1 <span class="ot">&lt;-</span> <span class="fu">CMSTtests</span>(CMSTCross,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>                  <span class="at">pheno1 =</span> nms[<span class="dv">1</span>],</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>                  <span class="at">pheno2 =</span> nms[<span class="dv">2</span>],</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>                  <span class="at">Q.chr =</span> <span class="dv">1</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>                  <span class="at">Q.pos =</span> <span class="dv">55</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>                  <span class="at">addcov1 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>                  <span class="at">addcov2 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>                  <span class="at">intcov1 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>                  <span class="at">intcov2 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">&quot;all&quot;</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>                  <span class="at">penalty =</span> <span class="st">&quot;both&quot;</span>)</span></code></pre></div>
+<p>The output of the function is composed of a list with 17 elements. It
+returns the names of the phenotypes and number of individuals ():</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>out1[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; $pheno1</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;y1&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; $pheno2</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; [1] &quot;y2&quot;</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; $n.ind</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span></code></pre></div>
+<p>The log-likelihood scores () of models <span class="math inline">\(M_1\)</span>, <span class="math inline">\(M_2\)</span>, <span class="math inline">\(M_3\)</span>, and <span class="math inline">\(M_4\)</span> (see Chaibub Neto et al. 2012 for
+details):</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>out1[<span class="dv">4</span>]</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; $loglik</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; [1] -123.5318 -140.4604 -141.5803 -123.4834</span></span></code></pre></div>
+<p>The dimensions of the models ():</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>out1[<span class="dv">5</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#&gt; $model.dim</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt; [1] 6 6 6 7</span></span></code></pre></div>
+<p>The <span class="math inline">\(R^2\)</span> values () relative to
+the regression of phenotypes 1 and 2 on the causal anchor:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>out1[<span class="dv">6</span>]</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt; $R2</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; [1] 0.4407170 0.2153583</span></span></code></pre></div>
+<p>The covariance matrix () with the variances and covariances of the
+penalized log-likelihood ratios of models <span class="math inline">\(M_1 \times M_2\)</span>, <span class="math inline">\(M_1 \times M_3\)</span>, <span class="math inline">\(M_1 \times M_4\)</span>, <span class="math inline">\(M_2 \times M_3\)</span>, <span class="math inline">\(M_2 \times M_4\)</span>, and <span class="math inline">\(M_3 \times M_4\)</span>:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>out1[<span class="dv">7</span>]</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; $S.hat</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt;             [,1]        [,2]         [,3]         [,4]         [,5]        [,6]</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; [1,]  0.26221327 -0.01323094  0.010924311 -0.275444212 -0.251288963  0.02415525</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt; [2,] -0.01323094  0.36275299  0.012080993  0.375983930  0.025311930 -0.35067200</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt; [3,]  0.01092431  0.01208099  0.001115354  0.001156681 -0.009808958 -0.01096564</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#&gt; [4,] -0.27544421  0.37598393  0.001156681  0.651428142  0.276600893 -0.37482725</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt; [5,] -0.25128896  0.02531193 -0.009808958  0.276600893  0.241480006 -0.03512089</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt; [6,]  0.02415525 -0.35067200 -0.010965639 -0.374827248 -0.035120888  0.33970636</span></span></code></pre></div>
+<p>The BIC scores ():</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>out1[<span class="dv">8</span>]</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt; $BICs</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; [1] 274.6946 308.5518 310.7917 279.2030</span></span></code></pre></div>
+<p>The BIC-based penalized log-likelihood test statistics ():</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>out1[<span class="dv">9</span>]</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="co">#&gt; $Z.bic</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt;      [,1]     [,2]      [,3]      [,4]</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt; [1,]   NA 3.305926 2.9966507  6.749745</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; [2,]   NA       NA 0.1387598 -2.986200</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; [3,]   NA       NA        NA -2.709873</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [4,]   NA       NA        NA        NA</span></span></code></pre></div>
+<p>The BIC-based model selection p-values for the parametric CMST (),
+non-parametric CMST () and joint parametric CMST ():</p>
+<p>%The small values of the first p-values across all 3 CMST test
+versions, suggests that model <span class="math inline">\(M_1\)</span>
+is significantly closer to the true model than models <span class="math inline">\(M_2\)</span>, <span class="math inline">\(M_3\)</span> and <span class="math inline">\(M_4\)</span>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>out1[<span class="dv">10</span><span class="sc">:</span><span class="dv">12</span>]</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co">#&gt; $pvals.p.BIC</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="co">#&gt; [1] 0.001364817 0.999526684 0.998635183 1.000000000</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co">#&gt; $pvals.np.BIC</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; [1] 6.289575e-06 9.999977e-01 9.999999e-01 1.000000e+00</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; $pvals.j.BIC</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt; [1] 0.003779942 0.999946806 0.999668322 1.000000000</span></span></code></pre></div>
+<p>The analogous AIC-based quantities:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>out1[<span class="dv">13</span><span class="sc">:</span><span class="dv">17</span>]</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="co">#&gt; $AICs</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#&gt; [1] 259.0636 292.9208 295.1606 260.9668</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt; $Z.aic</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt;      [,1]     [,2]      [,3]      [,4]</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt; [1,]   NA 3.305926 2.9966507  2.849429</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co">#&gt; [2,]   NA       NA 0.1387598 -3.251273</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co">#&gt; [3,]   NA       NA        NA -2.933361</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co">#&gt; [4,]   NA       NA        NA        NA</span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="co">#&gt; $pvals.p.AIC</span></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="co">#&gt; [1] 0.002189889 0.999526684 0.998635183 0.997810111</span></span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co">#&gt; $pvals.np.AIC</span></span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="co">#&gt; [1] 6.289575e-06 9.999977e-01 1.000000e+00 9.999977e-01</span></span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="co">#&gt; $pvals.j.AIC</span></span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="co">#&gt; [1] 0.005994515 0.999946806 0.999668322 1.000000000</span></span></code></pre></div>
+<p>The function can also computes CMST tests of a single phenotype
+against a list of phenotypes. Its output is less detailed though. In
+this particular call we test <span class="math inline">\(y_1\)</span>
+against <span class="math inline">\(y_2\)</span> and <span class="math inline">\(y_3\)</span>.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>out2 <span class="ot">&lt;-</span> <span class="fu">CMSTtests</span>(CMSTCross,</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>                  <span class="at">pheno1 =</span> nms[<span class="dv">1</span>],</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>                  <span class="at">pheno2 =</span> nms[<span class="sc">-</span><span class="dv">1</span>],</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>                  <span class="at">Q.chr =</span> <span class="dv">1</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>                  <span class="at">Q.pos =</span> <span class="fl">55.5</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>                  <span class="at">addcov1 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>                  <span class="at">addcov2 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>                  <span class="at">intcov1 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>                  <span class="at">intcov2 =</span> <span class="cn">NULL</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">&quot;all&quot;</span>,</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>                  <span class="at">penalty =</span> <span class="st">&quot;both&quot;</span>)</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>out2</span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co">#&gt; $R2s</span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt;       R2.Y1 ~ Q R2.Y2 ~ Q</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.4286585 0.2112760</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.4286585 0.2945801</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt; $AIC.stats</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt;          AIC.1    AIC.2    AIC.3    AIC.4     z.12     z.13      z.14      z.23</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; y1_y2 261.1967 293.4397 297.8127 263.0819 3.136952 3.034372 2.6436961 0.2659898</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt; y1_y3 256.9466 278.0272 311.4368 258.2783 2.177343 3.876750 0.8229369 2.0030490</span></span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt;            z.24      z.34</span></span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="co">#&gt; y1_y2 -3.084095 -2.975873</span></span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="co">#&gt; y1_y3 -2.329987 -4.023391</span></span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="co">#&gt; $BIC.stats</span></span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="co">#&gt;          BIC.1    BIC.2    BIC.3    BIC.4     z.12     z.13     z.14      z.23</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="co">#&gt; y1_y2 276.8278 309.0707 313.4437 281.3181 3.136952 3.034372 6.297065 0.2659898</span></span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="co">#&gt; y1_y3 272.5777 293.6583 327.0678 276.5145 2.177343 3.876750 2.432884 2.0030490</span></span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="co">#&gt;            z.24      z.34</span></span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="co">#&gt; y1_y2 -2.819431 -2.752652</span></span>
+<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="co">#&gt; y1_y3 -2.022629 -3.826214</span></span>
+<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="co">#&gt; $pvals.j.BIC</span></span>
+<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="co">#&gt;            pval.1    pval.2    pval.3 pval.4</span></span>
+<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.003366882 0.9998805 0.9997011      1</span></span>
+<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.035842851 0.9974595 0.9999899      1</span></span>
+<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a><span class="co">#&gt; $pvals.p.BIC</span></span>
+<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a><span class="co">#&gt;            pval.1    pval.2    pval.3    pval.4</span></span>
+<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.001205187 0.9991464 0.9987948 1.0000000</span></span>
+<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.014727493 0.9852725 0.9999471 0.9925105</span></span>
+<span id="cb16-43"><a href="#cb16-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-44"><a href="#cb16-44" tabindex="-1"></a><span class="co">#&gt; $pvals.np.BIC</span></span>
+<span id="cb16-45"><a href="#cb16-45" tabindex="-1"></a><span class="co">#&gt;             pval.1    pval.2 pval.3    pval.4</span></span>
+<span id="cb16-46"><a href="#cb16-46" tabindex="-1"></a><span class="co">#&gt; y1_y2 2.346206e-06 0.9999992      1 1.0000000</span></span>
+<span id="cb16-47"><a href="#cb16-47" tabindex="-1"></a><span class="co">#&gt; y1_y3 1.758821e-03 0.9991050      1 0.9999607</span></span>
+<span id="cb16-48"><a href="#cb16-48" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-49"><a href="#cb16-49" tabindex="-1"></a><span class="co">#&gt; $pvals.j.AIC</span></span>
+<span id="cb16-50"><a href="#cb16-50" tabindex="-1"></a><span class="co">#&gt;           pval.1    pval.2    pval.3 pval.4</span></span>
+<span id="cb16-51"><a href="#cb16-51" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.01109625 0.9998805 0.9997011      1</span></span>
+<span id="cb16-52"><a href="#cb16-52" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.38662986 0.9985151 0.9999950      1</span></span>
+<span id="cb16-53"><a href="#cb16-53" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-54"><a href="#cb16-54" tabindex="-1"></a><span class="co">#&gt; $pvals.p.AIC</span></span>
+<span id="cb16-55"><a href="#cb16-55" tabindex="-1"></a><span class="co">#&gt;            pval.1    pval.2    pval.3    pval.4</span></span>
+<span id="cb16-56"><a href="#cb16-56" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.004100312 0.9991464 0.9987948 0.9958997</span></span>
+<span id="cb16-57"><a href="#cb16-57" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.205271925 0.9900966 0.9999713 0.7947281</span></span>
+<span id="cb16-58"><a href="#cb16-58" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-59"><a href="#cb16-59" tabindex="-1"></a><span class="co">#&gt; $pvals.np.AIC</span></span>
+<span id="cb16-60"><a href="#cb16-60" tabindex="-1"></a><span class="co">#&gt;             pval.1    pval.2 pval.3    pval.4</span></span>
+<span id="cb16-61"><a href="#cb16-61" tabindex="-1"></a><span class="co">#&gt; y1_y2 1.608001e-05 0.9999992      1 0.9999937</span></span>
+<span id="cb16-62"><a href="#cb16-62" tabindex="-1"></a><span class="co">#&gt; y1_y3 4.431304e-02 0.9991050      1 0.9715560</span></span></code></pre></div>
+</div>
+<div id="other-functions" class="section level2">
+<h2>Other Functions</h2>
+<p>There are several other functions involved in simulation and in data
+analysis that are not well documented yet. See available at for further
+analysis. Here we do scans for the three traits, and create a reduced
+object with only high LOD values.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>CMSTscan <span class="ot">&lt;-</span> <span class="fu">scanone</span>(CMSTCross, <span class="at">pheno.col =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">method =</span> <span class="st">&quot;hk&quot;</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>CMSThigh <span class="ot">&lt;-</span> <span class="fu">highlod</span>(CMSTscan)</span></code></pre></div>
+<p>For our purposes, we place the three traits on chromosome 1 at some
+arbitrary positions, with trait having causal ``targets’’ of the other
+two traits.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>traits <span class="ot">&lt;-</span> <span class="fu">names</span>(CMSTCross<span class="sc">$</span>pheno)</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>annot <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">name =</span> traits, <span class="at">traits =</span> traits, <span class="at">chr =</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">3</span>),</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a> <span class="at">Mb.pos =</span> <span class="fu">c</span>(<span class="dv">55</span>,<span class="dv">10</span>,<span class="dv">100</span>))</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>annot<span class="sc">$</span>cM.pos <span class="ot">&lt;-</span> annot<span class="sc">$</span>Mb.pos</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>annot</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">#&gt;   name traits chr Mb.pos cM.pos</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; 1   y1     y1   1     55     55</span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; 2   y2     y2   1     10     10</span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; 3   y3     y3   1    100    100</span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>targets <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">y1 =</span> <span class="fu">c</span>(<span class="st">&quot;y2&quot;</span>,<span class="st">&quot;y3&quot;</span>))</span></code></pre></div>
+<p>Now we used the scans (via ) and the annotation to identify candidate
+regulators, the subset of cis-acting candidate regulators, and
+co-mapping targets.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>cand.reg <span class="ot">&lt;-</span> <span class="fu">GetCandReg</span>(CMSThigh, annot, traits)</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>cand.reg</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="co">#&gt;   gene phys.chr phys.pos peak.chr peak.pos  peak.lod</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co">#&gt; 1   y1        1       55        1 55.00000 12.618418</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="co">#&gt; 2   y2        1       10        1 55.00000  5.266431</span></span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a><span class="co">#&gt; 3   y3        1      100        1 55.54525  7.577615</span></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>cis.cand.reg <span class="ot">&lt;-</span> <span class="fu">GetCisCandReg</span>(CMSThigh, cand.reg)</span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>cis.cand.reg</span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a><span class="co">#&gt;   gene phys.chr phys.pos peak.pos peak.lod peak.pos.lower peak.pos.upper</span></span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="co">#&gt; 1   y1        1       55       55 12.61842             53       57.61146</span></span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a>comap.targets <span class="ot">&lt;-</span> <span class="fu">GetCoMappingTraits</span>(CMSThigh, cand.reg)</span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a>comap.targets</span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a><span class="co">#&gt; $y1</span></span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a><span class="co">#&gt; [1] &quot;y2&quot; &quot;y3&quot;</span></span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb19-16"><a href="#cb19-16" tabindex="-1"></a><span class="co">#&gt; $y2</span></span>
+<span id="cb19-17"><a href="#cb19-17" tabindex="-1"></a><span class="co">#&gt; [1] &quot;y1&quot; &quot;y3&quot;</span></span>
+<span id="cb19-18"><a href="#cb19-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb19-19"><a href="#cb19-19" tabindex="-1"></a><span class="co">#&gt; $y3</span></span>
+<span id="cb19-20"><a href="#cb19-20" tabindex="-1"></a><span class="co">#&gt; [1] &quot;y1&quot; &quot;y2&quot;</span></span></code></pre></div>
+<p>Next, we perform tests to infer causal relationships.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>tests <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="cf">for</span>(k <span class="cf">in</span> <span class="fu">seq</span>(<span class="fu">names</span>(comap.targets))) {</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  tests[[k]] <span class="ot">&lt;-</span> <span class="fu">FitAllTests</span>(CMSTCross, <span class="at">pheno1 =</span> <span class="fu">names</span>(comap.targets)[k],</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>                      <span class="at">pheno2 =</span> comap.targets[[k]],</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>                      <span class="at">Q.chr =</span> cand.reg[k, <span class="dv">4</span>],</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>                      <span class="at">Q.pos =</span> cand.reg[k, <span class="dv">5</span>])</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>}</span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co">#&gt; pheno2 =  1 </span></span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="co">#&gt; pheno2 =  2 </span></span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="co">#&gt; CIT pheno2 =  y2 </span></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&gt; CIT pheno2 =  y3 </span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="co">#&gt; pheno2 =  1 </span></span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co">#&gt; pheno2 =  2 </span></span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a><span class="co">#&gt; CIT pheno2 =  y1 </span></span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a><span class="co">#&gt; CIT pheno2 =  y3 </span></span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co">#&gt; pheno2 =  1 </span></span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a><span class="co">#&gt; pheno2 =  2 </span></span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a><span class="co">#&gt; CIT pheno2 =  y1 </span></span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a><span class="co">#&gt; CIT pheno2 =  y2</span></span>
+<span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a><span class="fu">names</span>(tests) <span class="ot">&lt;-</span> <span class="fu">names</span>(comap.targets)</span>
+<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a>tests <span class="ot">&lt;-</span> <span class="fu">JoinTestOutputs</span>(comap.targets, tests)</span>
+<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a>tests</span>
+<span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a><span class="co">#&gt; $R2s</span></span>
+<span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a><span class="co">#&gt;       R2.Y1 ~ Q R2.Y2 ~ Q</span></span>
+<span id="cb20-25"><a href="#cb20-25" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.4407170 0.2153583</span></span>
+<span id="cb20-26"><a href="#cb20-26" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.4407170 0.2914979</span></span>
+<span id="cb20-27"><a href="#cb20-27" tabindex="-1"></a><span class="co">#&gt; y2_y1 0.2153583 0.4407170</span></span>
+<span id="cb20-28"><a href="#cb20-28" tabindex="-1"></a><span class="co">#&gt; y2_y3 0.2153583 0.2914979</span></span>
+<span id="cb20-29"><a href="#cb20-29" tabindex="-1"></a><span class="co">#&gt; y3_y1 0.2945801 0.4286585</span></span>
+<span id="cb20-30"><a href="#cb20-30" tabindex="-1"></a><span class="co">#&gt; y3_y2 0.2945801 0.2112760</span></span>
+<span id="cb20-31"><a href="#cb20-31" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-32"><a href="#cb20-32" tabindex="-1"></a><span class="co">#&gt; $AIC.stats</span></span>
+<span id="cb20-33"><a href="#cb20-33" tabindex="-1"></a><span class="co">#&gt;          AIC.1    AIC.2    AIC.3    AIC.4      z.12      z.13       z.14</span></span>
+<span id="cb20-34"><a href="#cb20-34" tabindex="-1"></a><span class="co">#&gt; y1_y2 259.0636 292.9208 295.1606 260.9668  3.305926 2.9966507  2.8494289</span></span>
+<span id="cb20-35"><a href="#cb20-35" tabindex="-1"></a><span class="co">#&gt; y1_y3 254.8135 278.4632 309.7396 256.4303  2.339472 4.2078724  1.3197398</span></span>
+<span id="cb20-36"><a href="#cb20-36" tabindex="-1"></a><span class="co">#&gt; y2_y1 292.9208 259.0636 295.1606 260.9668 -3.305926 0.1387598 -3.2512727</span></span>
+<span id="cb20-37"><a href="#cb20-37" tabindex="-1"></a><span class="co">#&gt; y2_y3 226.3940 216.1866 231.6614 213.0150 -1.014912 0.4428305 -2.0302949</span></span>
+<span id="cb20-38"><a href="#cb20-38" tabindex="-1"></a><span class="co">#&gt; y3_y1 278.0272 256.9466 311.4368 258.2783 -2.177343 2.0030490 -2.3299872</span></span>
+<span id="cb20-39"><a href="#cb20-39" tabindex="-1"></a><span class="co">#&gt; y3_y2 215.7506 226.9129 231.7444 212.9632  1.098857 1.2871586 -0.5813799</span></span>
+<span id="cb20-40"><a href="#cb20-40" tabindex="-1"></a><span class="co">#&gt;            z.23       z.24      z.34</span></span>
+<span id="cb20-41"><a href="#cb20-41" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.1387598 -3.2512727 -2.933361</span></span>
+<span id="cb20-42"><a href="#cb20-42" tabindex="-1"></a><span class="co">#&gt; y1_y3 1.9587743 -2.4119422 -4.279798</span></span>
+<span id="cb20-43"><a href="#cb20-43" tabindex="-1"></a><span class="co">#&gt; y2_y1 2.9966507  2.8494289 -2.933361</span></span>
+<span id="cb20-44"><a href="#cb20-44" tabindex="-1"></a><span class="co">#&gt; y2_y3 1.2380872 -0.6314165 -2.084435</span></span>
+<span id="cb20-45"><a href="#cb20-45" tabindex="-1"></a><span class="co">#&gt; y3_y1 3.8767496  0.8229369 -4.023391</span></span>
+<span id="cb20-46"><a href="#cb20-46" tabindex="-1"></a><span class="co">#&gt; y3_y2 0.3909483 -2.0014294 -2.073127</span></span>
+<span id="cb20-47"><a href="#cb20-47" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-48"><a href="#cb20-48" tabindex="-1"></a><span class="co">#&gt; $BIC.stats</span></span>
+<span id="cb20-49"><a href="#cb20-49" tabindex="-1"></a><span class="co">#&gt;          BIC.1    BIC.2    BIC.3    BIC.4      z.12      z.13        z.14</span></span>
+<span id="cb20-50"><a href="#cb20-50" tabindex="-1"></a><span class="co">#&gt; y1_y2 274.6946 308.5518 310.7917 279.2030  3.305926 2.9966507  6.74974480</span></span>
+<span id="cb20-51"><a href="#cb20-51" tabindex="-1"></a><span class="co">#&gt; y1_y3 270.4445 294.0943 325.3707 274.6665  2.339472 4.2078724  3.44622282</span></span>
+<span id="cb20-52"><a href="#cb20-52" tabindex="-1"></a><span class="co">#&gt; y2_y1 308.5518 274.6946 310.7917 279.2030 -3.305926 0.1387598 -2.98619967</span></span>
+<span id="cb20-53"><a href="#cb20-53" tabindex="-1"></a><span class="co">#&gt; y2_y3 242.0250 231.8176 247.2924 231.2511 -1.014912 0.4428305 -1.63495434</span></span>
+<span id="cb20-54"><a href="#cb20-54" tabindex="-1"></a><span class="co">#&gt; y3_y1 293.6583 272.5777 327.0678 276.5145 -2.177343 2.0030490 -2.02262858</span></span>
+<span id="cb20-55"><a href="#cb20-55" tabindex="-1"></a><span class="co">#&gt; y3_y2 231.3816 242.5439 247.3754 231.1994  1.098857 1.2871586 -0.03799597</span></span>
+<span id="cb20-56"><a href="#cb20-56" tabindex="-1"></a><span class="co">#&gt;            z.23       z.24      z.34</span></span>
+<span id="cb20-57"><a href="#cb20-57" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.1387598 -2.9861997 -2.709873</span></span>
+<span id="cb20-58"><a href="#cb20-58" tabindex="-1"></a><span class="co">#&gt; y1_y3 1.9587743 -2.1267544 -4.070649</span></span>
+<span id="cb20-59"><a href="#cb20-59" tabindex="-1"></a><span class="co">#&gt; y2_y1 2.9966507  6.7497448 -2.709873</span></span>
+<span id="cb20-60"><a href="#cb20-60" tabindex="-1"></a><span class="co">#&gt; y2_y3 1.2380872 -0.1127673 -1.793211</span></span>
+<span id="cb20-61"><a href="#cb20-61" tabindex="-1"></a><span class="co">#&gt; y3_y1 3.8767496  2.4328842 -3.826214</span></span>
+<span id="cb20-62"><a href="#cb20-62" tabindex="-1"></a><span class="co">#&gt; y3_y2 0.3909483 -1.6276524 -1.785559</span></span>
+<span id="cb20-63"><a href="#cb20-63" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-64"><a href="#cb20-64" tabindex="-1"></a><span class="co">#&gt; $pvals.j.BIC</span></span>
+<span id="cb20-65"><a href="#cb20-65" tabindex="-1"></a><span class="co">#&gt;            pval.1      pval.2    pval.3    pval.4</span></span>
+<span id="cb20-66"><a href="#cb20-66" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.003779942 0.999946806 0.9996683 1.0000000</span></span>
+<span id="cb20-67"><a href="#cb20-67" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.023771405 0.998343803 0.9999985 1.0000000</span></span>
+<span id="cb20-68"><a href="#cb20-68" tabindex="-1"></a><span class="co">#&gt; y2_y1 0.999946806 0.003779942 0.9996683 1.0000000</span></span>
+<span id="cb20-69"><a href="#cb20-69" tabindex="-1"></a><span class="co">#&gt; y2_y3 0.991332219 0.727786108 0.9881748 0.9533152</span></span>
+<span id="cb20-70"><a href="#cb20-70" tabindex="-1"></a><span class="co">#&gt; y3_y1 0.997459508 0.035842851 0.9999899 1.0000000</span></span>
+<span id="cb20-71"><a href="#cb20-71" tabindex="-1"></a><span class="co">#&gt; y3_y2 0.708326536 0.990042732 0.9878293 0.9698697</span></span>
+<span id="cb20-72"><a href="#cb20-72" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-73"><a href="#cb20-73" tabindex="-1"></a><span class="co">#&gt; $pvals.p.BIC</span></span>
+<span id="cb20-74"><a href="#cb20-74" tabindex="-1"></a><span class="co">#&gt;            pval.1      pval.2    pval.3    pval.4</span></span>
+<span id="cb20-75"><a href="#cb20-75" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.001364817 0.999526684 0.9986352 1.0000000</span></span>
+<span id="cb20-76"><a href="#cb20-76" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.009655499 0.990344501 0.9999871 0.9997158</span></span>
+<span id="cb20-77"><a href="#cb20-77" tabindex="-1"></a><span class="co">#&gt; y2_y1 0.999526684 0.001364817 0.9986352 1.0000000</span></span>
+<span id="cb20-78"><a href="#cb20-78" tabindex="-1"></a><span class="co">#&gt; y2_y3 0.948970690 0.544892461 0.9635304 0.4551075</span></span>
+<span id="cb20-79"><a href="#cb20-79" tabindex="-1"></a><span class="co">#&gt; y3_y1 0.985272507 0.014727493 0.9999471 0.9925105</span></span>
+<span id="cb20-80"><a href="#cb20-80" tabindex="-1"></a><span class="co">#&gt; y3_y2 0.515154554 0.948200693 0.9629147 0.4848454</span></span>
+<span id="cb20-81"><a href="#cb20-81" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-82"><a href="#cb20-82" tabindex="-1"></a><span class="co">#&gt; $pvals.np.BIC</span></span>
+<span id="cb20-83"><a href="#cb20-83" tabindex="-1"></a><span class="co">#&gt;             pval.1       pval.2    pval.3    pval.4</span></span>
+<span id="cb20-84"><a href="#cb20-84" tabindex="-1"></a><span class="co">#&gt; y1_y2 6.289575e-06 9.999977e-01 0.9999999 1.0000000</span></span>
+<span id="cb20-85"><a href="#cb20-85" tabindex="-1"></a><span class="co">#&gt; y1_y3 2.043886e-04 9.999084e-01 1.0000000 0.9999997</span></span>
+<span id="cb20-86"><a href="#cb20-86" tabindex="-1"></a><span class="co">#&gt; y2_y1 9.999977e-01 6.289575e-06 0.9999999 1.0000000</span></span>
+<span id="cb20-87"><a href="#cb20-87" tabindex="-1"></a><span class="co">#&gt; y2_y3 9.556870e-01 8.643735e-01 0.9997956 0.1841008</span></span>
+<span id="cb20-88"><a href="#cb20-88" tabindex="-1"></a><span class="co">#&gt; y3_y1 9.991050e-01 1.758821e-03 1.0000000 0.9999607</span></span>
+<span id="cb20-89"><a href="#cb20-89" tabindex="-1"></a><span class="co">#&gt; y3_y2 8.158992e-01 9.895106e-01 0.9997956 0.2420592</span></span>
+<span id="cb20-90"><a href="#cb20-90" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-91"><a href="#cb20-91" tabindex="-1"></a><span class="co">#&gt; $pvals.j.AIC</span></span>
+<span id="cb20-92"><a href="#cb20-92" tabindex="-1"></a><span class="co">#&gt;            pval.1      pval.2    pval.3    pval.4</span></span>
+<span id="cb20-93"><a href="#cb20-93" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.005994515 0.999946806 0.9996683 1.0000000</span></span>
+<span id="cb20-94"><a href="#cb20-94" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.195697891 0.998721899 0.9999990 1.0000000</span></span>
+<span id="cb20-95"><a href="#cb20-95" tabindex="-1"></a><span class="co">#&gt; y2_y1 0.999946806 0.005994515 0.9996683 1.0000000</span></span>
+<span id="cb20-96"><a href="#cb20-96" tabindex="-1"></a><span class="co">#&gt; y2_y3 0.997728972 0.880223650 0.9949730 0.6993179</span></span>
+<span id="cb20-97"><a href="#cb20-97" tabindex="-1"></a><span class="co">#&gt; y3_y1 0.998515091 0.386629857 0.9999950 1.0000000</span></span>
+<span id="cb20-98"><a href="#cb20-98" tabindex="-1"></a><span class="co">#&gt; y3_y2 0.875137265 0.997070161 0.9947478 0.7328492</span></span>
+<span id="cb20-99"><a href="#cb20-99" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-100"><a href="#cb20-100" tabindex="-1"></a><span class="co">#&gt; $pvals.p.AIC</span></span>
+<span id="cb20-101"><a href="#cb20-101" tabindex="-1"></a><span class="co">#&gt;            pval.1      pval.2    pval.3    pval.4</span></span>
+<span id="cb20-102"><a href="#cb20-102" tabindex="-1"></a><span class="co">#&gt; y1_y2 0.002189889 0.999526684 0.9986352 0.9978101</span></span>
+<span id="cb20-103"><a href="#cb20-103" tabindex="-1"></a><span class="co">#&gt; y1_y3 0.093460955 0.992066102 0.9999906 0.9065390</span></span>
+<span id="cb20-104"><a href="#cb20-104" tabindex="-1"></a><span class="co">#&gt; y2_y1 0.999526684 0.002189889 0.9986352 0.9978101</span></span>
+<span id="cb20-105"><a href="#cb20-105" tabindex="-1"></a><span class="co">#&gt; y2_y3 0.978836716 0.736115878 0.9814397 0.2638841</span></span>
+<span id="cb20-106"><a href="#cb20-106" tabindex="-1"></a><span class="co">#&gt; y3_y1 0.990096585 0.205271925 0.9999713 0.7947281</span></span>
+<span id="cb20-107"><a href="#cb20-107" tabindex="-1"></a><span class="co">#&gt; y3_y2 0.719507792 0.977326933 0.9809198 0.2804922</span></span>
+<span id="cb20-108"><a href="#cb20-108" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-109"><a href="#cb20-109" tabindex="-1"></a><span class="co">#&gt; $pvals.np.AIC</span></span>
+<span id="cb20-110"><a href="#cb20-110" tabindex="-1"></a><span class="co">#&gt;             pval.1       pval.2    pval.3     pval.4</span></span>
+<span id="cb20-111"><a href="#cb20-111" tabindex="-1"></a><span class="co">#&gt; y1_y2 6.289575e-06 9.999977e-01 1.0000000 0.99999765</span></span>
+<span id="cb20-112"><a href="#cb20-112" tabindex="-1"></a><span class="co">#&gt; y1_y3 3.318560e-03 9.999084e-01 1.0000000 0.99824118</span></span>
+<span id="cb20-113"><a href="#cb20-113" tabindex="-1"></a><span class="co">#&gt; y2_y1 9.999977e-01 6.289575e-06 1.0000000 0.99999765</span></span>
+<span id="cb20-114"><a href="#cb20-114" tabindex="-1"></a><span class="co">#&gt; y2_y3 9.823999e-01 9.895106e-01 0.9997956 0.02844397</span></span>
+<span id="cb20-115"><a href="#cb20-115" tabindex="-1"></a><span class="co">#&gt; y3_y1 9.991050e-01 4.431304e-02 1.0000000 0.97155603</span></span>
+<span id="cb20-116"><a href="#cb20-116" tabindex="-1"></a><span class="co">#&gt; y3_y2 9.823999e-01 9.895106e-01 0.9997956 0.02844397</span></span>
+<span id="cb20-117"><a href="#cb20-117" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-118"><a href="#cb20-118" tabindex="-1"></a><span class="co">#&gt; $pvals.cit</span></span>
+<span id="cb20-119"><a href="#cb20-119" tabindex="-1"></a><span class="co">#&gt;          pval.1       pval.2</span></span>
+<span id="cb20-120"><a href="#cb20-120" tabindex="-1"></a><span class="co">#&gt; y2 1.641765e-06 7.741579e-01</span></span>
+<span id="cb20-121"><a href="#cb20-121" tabindex="-1"></a><span class="co">#&gt; y3 1.770222e-06 6.029575e-01</span></span>
+<span id="cb20-122"><a href="#cb20-122" tabindex="-1"></a><span class="co">#&gt; y1 7.741579e-01 1.641765e-06</span></span>
+<span id="cb20-123"><a href="#cb20-123" tabindex="-1"></a><span class="co">#&gt; y3 2.692473e-02 8.868703e-04</span></span>
+<span id="cb20-124"><a href="#cb20-124" tabindex="-1"></a><span class="co">#&gt; y1 4.219075e-01 4.617830e-06</span></span>
+<span id="cb20-125"><a href="#cb20-125" tabindex="-1"></a><span class="co">#&gt; y2 1.679369e-04 3.160420e-02</span></span>
+<span id="cb20-126"><a href="#cb20-126" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-127"><a href="#cb20-127" tabindex="-1"></a><span class="co">#&gt; $phenos</span></span>
+<span id="cb20-128"><a href="#cb20-128" tabindex="-1"></a><span class="co">#&gt;      [,1] [,2]</span></span>
+<span id="cb20-129"><a href="#cb20-129" tabindex="-1"></a><span class="co">#&gt; [1,] &quot;y1&quot; &quot;y2&quot;</span></span>
+<span id="cb20-130"><a href="#cb20-130" tabindex="-1"></a><span class="co">#&gt; [2,] &quot;y1&quot; &quot;y3&quot;</span></span>
+<span id="cb20-131"><a href="#cb20-131" tabindex="-1"></a><span class="co">#&gt; [3,] &quot;y2&quot; &quot;y1&quot;</span></span>
+<span id="cb20-132"><a href="#cb20-132" tabindex="-1"></a><span class="co">#&gt; [4,] &quot;y2&quot; &quot;y3&quot;</span></span>
+<span id="cb20-133"><a href="#cb20-133" tabindex="-1"></a><span class="co">#&gt; [5,] &quot;y3&quot; &quot;y1&quot;</span></span>
+<span id="cb20-134"><a href="#cb20-134" tabindex="-1"></a><span class="co">#&gt; [6,] &quot;y3&quot; &quot;y2&quot;</span></span></code></pre></div>
+<p>Finaly, we compare the inferred causal relationships to the known to
+assess precision, true positive rate and false positive rate.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">PrecTpFpMatrix</span>(<span class="at">alpha =</span> <span class="fu">seq</span>(<span class="fl">0.01</span>, <span class="fl">0.10</span>, <span class="at">by =</span> <span class="fl">0.01</span>),</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  <span class="at">val.targets =</span> targets, <span class="at">all.orfs =</span> CMSThigh<span class="sc">$</span>names, <span class="at">tests =</span> tests,</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>  <span class="at">cand.reg =</span> cand.reg, <span class="at">cis.cand.reg =</span> cis.cand.reg)</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">#&gt; $Prec1</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a><span class="co">#&gt;        0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1</span></span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="co">#&gt; aic    1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a><span class="co">#&gt; bic    1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="co">#&gt; j.bic  1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a><span class="co">#&gt; p.bic  1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="co">#&gt; np.bic 1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="co">#&gt; j.aic  1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="co">#&gt; p.aic  1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="co">#&gt; np.aic 1.00 1.00 1.00    1    1    1    1    1    1   1</span></span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a><span class="co">#&gt; cit    0.67 0.67 0.67    1    1    1    1    1    1   1</span></span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a><span class="co">#&gt; $Prec2</span></span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="co">#&gt;        0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1</span></span>
+<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a><span class="co">#&gt; aic       1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a><span class="co">#&gt; bic       1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-20"><a href="#cb21-20" tabindex="-1"></a><span class="co">#&gt; j.bic     1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-21"><a href="#cb21-21" tabindex="-1"></a><span class="co">#&gt; p.bic     1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-22"><a href="#cb21-22" tabindex="-1"></a><span class="co">#&gt; np.bic    1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-23"><a href="#cb21-23" tabindex="-1"></a><span class="co">#&gt; j.aic     1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-24"><a href="#cb21-24" tabindex="-1"></a><span class="co">#&gt; p.aic     1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-25"><a href="#cb21-25" tabindex="-1"></a><span class="co">#&gt; np.aic    1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-26"><a href="#cb21-26" tabindex="-1"></a><span class="co">#&gt; cit       1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-27"><a href="#cb21-27" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb21-28"><a href="#cb21-28" tabindex="-1"></a><span class="co">#&gt; $Tp1</span></span>
+<span id="cb21-29"><a href="#cb21-29" tabindex="-1"></a><span class="co">#&gt;        0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1</span></span>
+<span id="cb21-30"><a href="#cb21-30" tabindex="-1"></a><span class="co">#&gt; aic       2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-31"><a href="#cb21-31" tabindex="-1"></a><span class="co">#&gt; bic       2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-32"><a href="#cb21-32" tabindex="-1"></a><span class="co">#&gt; j.bic     1    1    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-33"><a href="#cb21-33" tabindex="-1"></a><span class="co">#&gt; p.bic     2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-34"><a href="#cb21-34" tabindex="-1"></a><span class="co">#&gt; np.bic    2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-35"><a href="#cb21-35" tabindex="-1"></a><span class="co">#&gt; j.aic     1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-36"><a href="#cb21-36" tabindex="-1"></a><span class="co">#&gt; p.aic     1    1    1    1    1    1    1    1    1   2</span></span>
+<span id="cb21-37"><a href="#cb21-37" tabindex="-1"></a><span class="co">#&gt; np.aic    2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-38"><a href="#cb21-38" tabindex="-1"></a><span class="co">#&gt; cit       2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-39"><a href="#cb21-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb21-40"><a href="#cb21-40" tabindex="-1"></a><span class="co">#&gt; $Tp2</span></span>
+<span id="cb21-41"><a href="#cb21-41" tabindex="-1"></a><span class="co">#&gt;        0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1</span></span>
+<span id="cb21-42"><a href="#cb21-42" tabindex="-1"></a><span class="co">#&gt; aic       2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-43"><a href="#cb21-43" tabindex="-1"></a><span class="co">#&gt; bic       2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-44"><a href="#cb21-44" tabindex="-1"></a><span class="co">#&gt; j.bic     1    1    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-45"><a href="#cb21-45" tabindex="-1"></a><span class="co">#&gt; p.bic     2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-46"><a href="#cb21-46" tabindex="-1"></a><span class="co">#&gt; np.bic    2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-47"><a href="#cb21-47" tabindex="-1"></a><span class="co">#&gt; j.aic     1    1    1    1    1    1    1    1    1   1</span></span>
+<span id="cb21-48"><a href="#cb21-48" tabindex="-1"></a><span class="co">#&gt; p.aic     1    1    1    1    1    1    1    1    1   2</span></span>
+<span id="cb21-49"><a href="#cb21-49" tabindex="-1"></a><span class="co">#&gt; np.aic    2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-50"><a href="#cb21-50" tabindex="-1"></a><span class="co">#&gt; cit       2    2    2    2    2    2    2    2    2   2</span></span>
+<span id="cb21-51"><a href="#cb21-51" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb21-52"><a href="#cb21-52" tabindex="-1"></a><span class="co">#&gt; $Fp1</span></span>
+<span id="cb21-53"><a href="#cb21-53" tabindex="-1"></a><span class="co">#&gt;        0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1</span></span>
+<span id="cb21-54"><a href="#cb21-54" tabindex="-1"></a><span class="co">#&gt; aic       0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-55"><a href="#cb21-55" tabindex="-1"></a><span class="co">#&gt; bic       0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-56"><a href="#cb21-56" tabindex="-1"></a><span class="co">#&gt; j.bic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-57"><a href="#cb21-57" tabindex="-1"></a><span class="co">#&gt; p.bic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-58"><a href="#cb21-58" tabindex="-1"></a><span class="co">#&gt; np.bic    0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-59"><a href="#cb21-59" tabindex="-1"></a><span class="co">#&gt; j.aic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-60"><a href="#cb21-60" tabindex="-1"></a><span class="co">#&gt; p.aic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-61"><a href="#cb21-61" tabindex="-1"></a><span class="co">#&gt; np.aic    0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-62"><a href="#cb21-62" tabindex="-1"></a><span class="co">#&gt; cit       1    1    1    0    0    0    0    0    0   0</span></span>
+<span id="cb21-63"><a href="#cb21-63" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb21-64"><a href="#cb21-64" tabindex="-1"></a><span class="co">#&gt; $Fp2</span></span>
+<span id="cb21-65"><a href="#cb21-65" tabindex="-1"></a><span class="co">#&gt;        0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1</span></span>
+<span id="cb21-66"><a href="#cb21-66" tabindex="-1"></a><span class="co">#&gt; aic       0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-67"><a href="#cb21-67" tabindex="-1"></a><span class="co">#&gt; bic       0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-68"><a href="#cb21-68" tabindex="-1"></a><span class="co">#&gt; j.bic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-69"><a href="#cb21-69" tabindex="-1"></a><span class="co">#&gt; p.bic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-70"><a href="#cb21-70" tabindex="-1"></a><span class="co">#&gt; np.bic    0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-71"><a href="#cb21-71" tabindex="-1"></a><span class="co">#&gt; j.aic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-72"><a href="#cb21-72" tabindex="-1"></a><span class="co">#&gt; p.aic     0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-73"><a href="#cb21-73" tabindex="-1"></a><span class="co">#&gt; np.aic    0    0    0    0    0    0    0    0    0   0</span></span>
+<span id="cb21-74"><a href="#cb21-74" tabindex="-1"></a><span class="co">#&gt; cit       0    0    0    0    0    0    0    0    0   0</span></span></code></pre></div>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>\end{document}</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

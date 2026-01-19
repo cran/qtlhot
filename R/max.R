@@ -1,24 +1,6 @@
-######################################################################
-# max.R
-#
-# Elias Chaibub Neto
-# Brian S Yandell
-#
-#     This program is free software; you can redistribute it and/or
-#     modify it under the terms of the GNU General Public License,
-#     version 3, as published by the Free Software Foundation.
-# 
-#     This program is distributed in the hope that it will be useful,
-#     but without any warranty; without even the implied warranty of
-#     merchantability or fitness for a particular purpose.  See the GNU
-#     General Public License, version 3, for more details.
-# 
-#     A copy of the GNU General Public License, version 3, is available
-#     at http://www.r-project.org/Licenses/GPL-3
-#
-# Contains: max.hotsize, max.highlod, quantile.highlod, get.tails
-######################################################################
-
+#' @method max hotsize
+#' @rdname hotsize
+#' @export
 max.hotsize <- function(x, ...)
 {
   if(is.null(x))
@@ -40,6 +22,9 @@ max.hotsize <- function(x, ...)
   }
   out
 }
+#' @method max highlod
+#' @rdname highlod
+#' @export
 max.highlod <- function(x, lod.thr = NULL, window = NULL, quant.level = NULL, ...)
 {
   if(is.null(window))
@@ -76,7 +61,27 @@ max.highlod <- function(x, lod.thr = NULL, window = NULL, quant.level = NULL, ..
     mymax(hotsize(x, lod.thr, window, quant.level, ...), window, quant.level)
 }
 ################################################################################
-quantile.highlod <- function(x, probs = NULL, lod.thr = NULL, n.quant, n.pheno,
+#' Compute Quantiles of High LOD Scores
+#' 
+#' The `quantile_highlod` function calculates quantiles of high LOD scores from a `highlod` object.
+#' It is used to summarize the distribution of LOD scores across the genome.
+#' 
+#' @param x A `highlod` object containing LOD scores.
+#' @param probs A numeric vector of probabilities for quantiles. If `NULL`, quantiles are computed for all available data.
+#' @param lod.thr LOD threshold for filtering scores. If `NULL`, no filtering is applied.
+#' @param n.quant Maximum number of quantiles to compute.
+#' @param n.pheno Number of phenotypes considered.
+#' @param max.quantile Logical; if `TRUE`, returns only the maximum quantile values.
+#' @param ... Additional arguments passed to internal functions.
+#' 
+#' @return A numeric vector or matrix of quantiles, depending on the input parameters.
+#' @examples
+#' \dontrun{
+#' highlod_obj <- highlod(scan1, lod.thr = 2.5)
+#' quantiles <- quantile_highlod(highlod_obj, probs = seq(0.1, 0.9, by = 0.1))
+#' }
+#' @export
+quantile_highlod <- function(x, probs = NULL, lod.thr = NULL, n.quant, n.pheno,
                              max.quantile = TRUE, ...)
 {
   highlod <- highlod.thr(x, lod.thr)
@@ -134,7 +139,24 @@ get.tails <- function(highs, n.quant = 2000, s.quant = seq(n.quant))
   out
 }
 #####################################################################
-quantile.hotperm <- function(x, probs = attr(x, "alpha.levels"),
+#' Compute Quantiles for Hotperm Results
+#' 
+#' The `quantile_hotperm` function calculates quantiles for permutation test results.
+#' It is used to summarize the distribution of hotspot sizes and LOD scores.
+#' 
+#' @param x A `hotperm` object containing permutation test results.
+#' @param probs A numeric vector of probabilities for quantiles. Defaults to the alpha levels in the object.
+#' @param lod.thr LOD threshold for filtering scores. If `NULL`, no filtering is applied.
+#' @param ... Additional arguments passed to internal functions.
+#' 
+#' @return A numeric vector or matrix of quantiles, depending on the input parameters.
+#' @examples
+#' \dontrun{
+#' hotperm_obj <- hotperm(cross, n.quant = 300, n.perm = 100, lod.thrs = c(2.5, 3.0))
+#' quantiles <- quantile_hotperm(hotperm_obj, probs = seq(0.1, 0.9, by = 0.1))
+#' }
+#' @export
+quantile_hotperm <- function(x, probs = attr(x, "alpha.levels"),
                              ..., lod.thr = NULL)
 {
   if(max(probs) <= 0.5)
@@ -142,7 +164,7 @@ quantile.hotperm <- function(x, probs = attr(x, "alpha.levels"),
   
   myquant <- function(x, probs) {
     x[is.na(x)] <- 0
-    out <- as.matrix(apply(x, 2, quantile, probs = probs))
+    out <- as.matrix(apply(x, 2, stats::quantile, probs = probs))
     if(length(probs) > 1)
       out <- t(out)
     out
@@ -176,7 +198,7 @@ quantile.hotperm <- function(x, probs = attr(x, "alpha.levels"),
                             else
                               0
                           })
-      offset <- nrow(quant) * (seq(ncol(quant)) - 1)
+      offset <- nrow(quant) * (seq_len(ncol(quant)) - 1)
       first.zero <- first.zero[first.zero > 0] + offset[first.zero > 0]
       quant[first.zero] <- min(lod.thr)
     }
